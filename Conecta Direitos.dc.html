@@ -1,0 +1,832 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- script-src precisa de 'unsafe-eval': support.js executa a lógica deste
+     componente via new Function(...) — é assim que o dc-runtime interpreta
+     o bloco de script marcado data-dc-script mais abaixo no arquivo. Sem
+     'unsafe-eval' o site inteiro (mapa, filtros, formulário) para de
+     funcionar. connect-src aponta pro mesmo projeto Supabase de SUPABASE_URL
+     lá embaixo — se trocar um, troque o outro também.
+     frame-ancestors NÃO vai aqui de propósito: navegadores ignoram essa
+     diretiva quando entregue via <meta> (confirmado testando — aparece um
+     aviso no console). Proteção contra clickjacking de verdade precisa vir
+     de um header HTTP do host (ver _headers, se você usar Netlify). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://unpkg.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' https://sovnstjtiulvzdblmxts.supabase.co">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;0,700;1,500&family=Karla:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" integrity="sha384-nblAP2mo2pVPyMQZDw9Xy9Cwgs9lowushAYep4w5+Q9kF4Ibf3n0B/gCMVdR+Vqy" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --ink: oklch(0.22 0.015 55);
+    --ink-soft: oklch(0.44 0.02 55);
+    --ink-faint: oklch(0.58 0.015 55);
+    --paper: oklch(0.982 0.008 75);
+    --paper-raised: oklch(0.995 0.004 75);
+    --line: oklch(0.89 0.012 60);
+    --accent: oklch(0.4 0.09 32);
+    --accent-soft: oklch(0.95 0.02 40);
+  }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: Karla, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  * { box-sizing: border-box; }
+  .ph-bold { font-size: 22px; }
+  .leaflet-container { font-family: Karla, system-ui, sans-serif; }
+  @keyframes sc-spin { to { transform: rotate(360deg); } }
+</style>
+</helmet>
+<div style="min-height:100vh;background:oklch(0.985 0.012 75);color:oklch(0.24 0.02 60)">
+
+  <header style="position:sticky;top:0;z-index:50;background:oklch(0.985 0.012 75 / 0.94);backdrop-filter:blur(10px);border-bottom:1px solid oklch(0.9 0.02 70)">
+    <div style="max-width:1000px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+        <div style="width:34px;height:34px;border-radius:11px;background:oklch(0.88 0.07 40);display:flex;align-items:center;justify-content:center;flex:none;color:oklch(0.32 0.08 35)"><i class="ph-bold ph-handshake"></i></div>
+        <div style="min-width:0">
+          <div style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:16px;letter-spacing:-0.01em;line-height:1.1">Conecta Direitos</div>
+          <div style="font-size:11.5px;color:oklch(0.5 0.02 60);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Serra da Ibiapaba · Ceará</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <label style="display:flex;align-items:center;gap:7px;background:oklch(0.99 0.008 75);border:1px solid oklch(0.89 0.02 65);border-radius:999px;padding:7px 12px 7px 14px">
+          <span style="color:oklch(0.5 0.03 50);display:flex"><i class="ph-bold ph-map-pin" style="font-size:15px"></i></span>
+          <select value="{{ city }}" onChange="{{ onCity }}" style="appearance:none;border:none;background:none;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;color:oklch(0.3 0.03 45);cursor:pointer;outline:none;max-width:140px">
+            <sc-for list="{{ cityNames }}" as="c" hint-placeholder-count="6">
+              <option value="{{ c }}">{{ c }}</option>
+            </sc-for>
+          </select>
+        </label>
+        <button type="button" onClick="{{ quickExit }}" style="display:flex;align-items:center;gap:7px;flex:none;background:var(--ink);color:var(--paper-raised);border:none;border-radius:7px;padding:10px 16px;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:oklch(0.32 0.02 55)">
+          <i class="ph-bold ph-sign-out" style="font-size:16px"></i>Saída rápida
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section style="max-width:1000px;margin:0 auto;padding:48px 20px 8px">
+    <p style="display:flex;align-items:center;gap:10px;margin:0 0 20px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint)"><span style="width:20px;height:1px;background:var(--line)"></span>Cartilha digital · 9 municípios da Ibiapaba</p>
+    <h1 style="font-family:Newsreader,Georgia,serif;font-weight:600;font-style:italic;font-size:clamp(32px,7vw,50px);line-height:1.08;letter-spacing:-0.015em;margin:0 0 18px;max-width:19ch;text-wrap:pretty;color:var(--ink)">Orientação, cidadania e respeito na prática pública.</h1>
+    <p style="font-size:17px;line-height:1.6;color:var(--ink-soft);max-width:52ch;margin:0 0 30px;text-wrap:pretty">Onde buscar apoio, quais são os seus direitos e como denunciar sem se expor. Escolha o seu município no topo da página: mapa, telefones e endereços mudam junto.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      <a href="#mapa" style="display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper-raised);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">Pontos de apoio em {{ city }}<i class="ph-bold ph-arrow-down" style="font-size:16px"></i></a>
+      <a href="#trilhas" style="display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">O que fazer agora</a>
+      <a href="#denuncia" style="display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">Denúncia anônima</a>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-top:30px;padding:14px 16px;border-radius:8px;border-left:2px solid var(--accent);background:var(--paper-raised);font-size:13.5px;line-height:1.5;color:var(--ink-soft);max-width:56ch">
+      <span style="color:var(--accent);flex:none;margin-top:1px"><i class="ph-bold ph-shield-check" style="font-size:18px"></i></span>
+      <span>O botão <strong style="font-weight:600;color:var(--ink)">Saída rápida</strong> fecha esta página imediatamente e leva você a um site neutro. Nada do que você digita aqui é salvo no seu aparelho.</span>
+    </div>
+  </section>
+
+  <section id="mapa" style="max-width:1000px;margin:0 auto;padding:56px 20px 0">
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Mapa de acolhimento · {{ city }}</h2>
+    <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 20px;max-width:52ch">Serviços e espaços do município com atendimento respeitoso. Toque em um filtro para ver os pontos.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+        <button type="button" onClick="{{ f.onClick }}" style="{{ f.style }}" style-hover="filter:brightness(0.97)">
+          <i class="ph-bold ph-{{ f.icon }}" style="font-size:16px"></i>{{ f.label }}
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="border-radius:20px;overflow:hidden;border:1px solid oklch(0.9 0.02 70)">
+      <div id="leaflet-map" style="height:340px;position:relative;z-index:0;background:oklch(0.96 0.02 130)"></div>
+      <div style="border-top:1px solid oklch(0.91 0.02 70);background:oklch(0.99 0.008 75);padding:16px 18px">
+        <sc-if value="{{ hasConfirmedPins }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.02 60);margin-bottom:12px">{{ listTitle }}</div>
+          <div style="display:grid;gap:10px">
+            <sc-for list="{{ visiblePins }}" as="p" hint-placeholder-count="3">
+              <div style="display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border-radius:12px;background:oklch(0.97 0.014 75);border:1px solid oklch(0.93 0.02 70)">
+                <span style="{{ p.dotStyle }}"><i class="ph-bold ph-{{ p.icon }}" style="font-size:16px"></i></span>
+                <div style="min-width:0">
+                  <div style="font-family:Newsreader,Georgia,serif;font-weight:600;font-size:15px;margin-bottom:3px">{{ p.name }}</div>
+                  <div style="font-size:13.5px;line-height:1.5;color:oklch(0.46 0.02 60);margin-bottom:8px">{{ p.detail }}</div>
+                  <sc-if value="{{ p.hasPhone }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:oklch(0.42 0.02 60)">
+                      <span style="display:flex;align-items:center;gap:5px"><i class="ph-bold ph-phone" style="font-size:13px"></i>{{ p.phone }}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ p.approx }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:5px;margin-top:6px;font-size:11.5px;color:oklch(0.5 0.1 60)"><i class="ph-bold ph-warning-circle" style="font-size:12px"></i>Localização aproximada no mapa (centro do município) — confirme o endereço por telefone</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <p style="font-size:12px;color:oklch(0.58 0.015 60);margin:14px 0 0;line-height:1.5">Endereços e telefones oficiais cruzados (Secretarias, SSPDS-CE e Diários Oficiais). Confirme por telefone antes de se deslocar.</p>
+        </sc-if>
+        <sc-if value="{{ !hasConfirmedPins }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:4px 2px">
+            <span style="color:oklch(0.5 0.08 60);flex:none;margin-top:1px"><i class="ph-bold ph-info" style="font-size:18px"></i></span>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:oklch(0.4 0.03 60)">Ainda estamos confirmando os pontos de apoio de <strong>{{ city }}</strong> com endereço e telefone oficiais. Enquanto isso, use os telefones gratuitos abaixo — valem para todo o estado.</p>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+      <div style="background:var(--paper-raised);border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:10px;padding:18px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-phone-call" style="font-size:15px;color:var(--accent)"></i>Vale para toda a região</div>
+        <div style="display:grid;gap:9px">
+          <sc-for list="{{ stateContacts }}" as="c" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:14px">
+              <span style="color:var(--ink-soft)">{{ c.name }}</span>
+              <strong style="font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:500;color:var(--ink);white-space:nowrap">{{ c.number }}</strong>
+            </div>
+          </sc-for>
+        </div>
+        <p style="font-size:12px;color:var(--ink-faint);margin:12px 0 0;line-height:1.5">Ligações gratuitas e sigilosas, 24 horas.</p>
+      </div>
+      <div style="background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:18px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-buildings" style="font-size:15px"></i>Ficha do município</div>
+        <div style="display:grid;gap:9px;font-size:14px;color:var(--ink-soft)">
+          <sc-for list="{{ cityFacts }}" as="f" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">
+              <span style="color:var(--ink-faint)">{{ f.label }}</span>
+              <span style="font-weight:600;text-align:right;color:var(--ink)">{{ f.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trilhas" style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">O que fazer agora</h2>
+    <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 20px;max-width:52ch">Escolha a situação mais parecida com a sua. Cada trilha diz o que levar, para onde ir e em que ordem.</p>
+    <div style="display:grid;gap:10px">
+      <sc-for list="{{ trails }}" as="t" hint-placeholder-count="4">
+        <div style="{{ t.wrapStyle }}">
+          <button type="button" onClick="{{ t.toggle }}" style="width:100%;display:flex;align-items:center;gap:13px;background:none;border:none;padding:18px 20px;cursor:pointer;text-align:left;font-family:Karla,sans-serif">
+            <span style="{{ t.iconStyle }}"><i class="ph-bold ph-{{ t.icon }}" style="font-size:19px"></i></span>
+            <span style="flex:1;font-family:Newsreader,Georgia,serif;font-weight:600;font-size:16.5px;color:oklch(0.24 0.02 60);letter-spacing:-0.01em">{{ t.title }}</span>
+            <span style="{{ t.chevronStyle }}"><i class="ph-bold ph-caret-down" style="font-size:18px"></i></span>
+          </button>
+          <sc-if value="{{ t.open }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 20px 22px 20px">
+              <p style="font-size:14.5px;line-height:1.6;color:oklch(0.42 0.02 60);margin:0 0 16px;max-width:62ch">{{ t.intro }}</p>
+              <div style="display:grid;gap:12px;margin-bottom:18px">
+                <sc-for list="{{ t.steps }}" as="s" hint-placeholder-count="3">
+                  <div style="display:flex;gap:12px;align-items:flex-start">
+                    <span style="flex:none;width:26px;height:26px;border-radius:9px;background:oklch(0.93 0.03 70);color:oklch(0.36 0.05 45);display:flex;align-items:center;justify-content:center;font-family:Newsreader,Georgia,serif;font-weight:700;font-size:13px">{{ s.n }}</span>
+                    <p style="margin:0;font-size:14.5px;line-height:1.6;color:oklch(0.3 0.02 60);max-width:62ch">{{ s.text }}</p>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background:oklch(0.97 0.02 90);border:1px solid oklch(0.92 0.025 85);border-radius:13px;padding:14px 16px">
+                <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.44 0.05 60);margin-bottom:8px"><i class="ph-bold ph-briefcase" style="font-size:14px"></i>Leve com você</div>
+                <p style="margin:0;font-size:14px;line-height:1.6;color:oklch(0.36 0.02 60)">{{ t.bring }}</p>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Direitos legais e proteção</h2>
+    <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">O que a lei garante e como acionar cada direito no serviço público.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+      <sc-for list="{{ rightsCards }}" as="c" hint-placeholder-count="4">
+        <article style="{{ c.style }}">
+          <span style="{{ c.iconStyle }}"><i class="ph-bold ph-{{ c.icon }}"></i></span>
+          <h3 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:17.5px;letter-spacing:-0.01em;margin:14px 0 8px;line-height:1.25">{{ c.title }}</h3>
+          <p style="font-size:14.5px;line-height:1.6;color:oklch(0.4 0.02 60);margin:0 0 12px;text-wrap:pretty">{{ c.text }}</p>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:oklch(0.42 0.05 40);padding-top:12px;border-top:1px solid oklch(0.91 0.02 70)">
+            <i class="ph-bold ph-map-pin" style="font-size:14px"></i>{{ c.where }}
+          </div>
+        </article>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="max-width:1000px;margin:0 auto;padding:48px 20px 0">
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Saúde e bem-estar</h2>
+    <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">Atendimento humanizado é direito, não favor. Use estes caminhos.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+      <sc-for list="{{ healthCards }}" as="c" hint-placeholder-count="4">
+        <article style="{{ c.style }}">
+          <span style="{{ c.iconStyle }}"><i class="ph-bold ph-{{ c.icon }}"></i></span>
+          <h3 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:17.5px;letter-spacing:-0.01em;margin:14px 0 8px;line-height:1.25">{{ c.title }}</h3>
+          <p style="font-size:14.5px;line-height:1.6;color:oklch(0.4 0.02 60);margin:0 0 12px;text-wrap:pretty">{{ c.text }}</p>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:oklch(0.42 0.05 40);padding-top:12px;border-top:1px solid oklch(0.91 0.02 70)">
+            <i class="ph-bold ph-phone" style="font-size:14px"></i>{{ c.where }}
+          </div>
+        </article>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="modelos" style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Modelos prontos</h2>
+    <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:54ch">Textos para copiar, preencher e entregar. Onde aparece [entre colchetes], troque pelos seus dados.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+      <sc-for list="{{ templates }}" as="t" hint-placeholder-count="3">
+        <article style="background:oklch(0.995 0.005 75);border:1px solid oklch(0.92 0.02 70);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="{{ t.iconStyle }}"><i class="ph-bold ph-{{ t.icon }}" style="font-size:18px"></i></span>
+            <h3 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:16.5px;letter-spacing:-0.01em;margin:0;line-height:1.25">{{ t.title }}</h3>
+          </div>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:oklch(0.48 0.02 60)">{{ t.purpose }}</p>
+          <pre style="margin:0;background:oklch(0.97 0.014 75);border:1px solid oklch(0.93 0.02 70);border-radius:12px;padding:14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.65;color:oklch(0.3 0.02 60);white-space:pre-wrap">{{ t.body }}</pre>
+          <button type="button" onClick="{{ t.copy }}" style="{{ t.btnStyle }}"><i class="ph-bold ph-{{ t.btnIcon }}" style="font-size:15px"></i>{{ t.btnLabel }}</button>
+        </article>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="servidores" style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+    <div style="border-radius:12px;background:var(--paper-raised);border:1px solid var(--line);border-top:2px solid var(--accent);padding:clamp(22px,4vw,34px)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;color:var(--accent)">
+        <i class="ph-bold ph-briefcase"></i>
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Para quem atende</span>
+      </div>
+      <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 10px;color:var(--ink)">Servidores públicos e equipes de atendimento</h2>
+      <p style="font-size:15.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 22px;max-width:56ch">A cartilha também é para recepção, enfermagem, escola, assistência social e guarda municipal. Duas listas curtas para consultar antes do atendimento.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+        <div style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.4 0.07 155);margin-bottom:14px"><i class="ph-bold ph-check" style="font-size:15px"></i>Faça</div>
+          <ul style="margin:0;padding:0;list-style:none;display:grid;gap:11px">
+            <sc-for list="{{ dos }}" as="d" hint-placeholder-count="5">
+              <li style="display:flex;gap:10px;font-size:14.5px;line-height:1.55;color:var(--ink)">
+                <span style="flex:none;width:7px;height:7px;border-radius:50%;background:oklch(0.72 0.09 155);margin-top:8px"></span>{{ d }}
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+        <div style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.45 0.09 25);margin-bottom:14px"><i class="ph-bold ph-x" style="font-size:15px"></i>Evite</div>
+          <ul style="margin:0;padding:0;list-style:none;display:grid;gap:11px">
+            <sc-for list="{{ donts }}" as="d" hint-placeholder-count="5">
+              <li style="display:flex;gap:10px;font-size:14.5px;line-height:1.55;color:var(--ink)">
+                <span style="flex:none;width:7px;height:7px;border-radius:50%;background:oklch(0.75 0.1 25);margin-top:8px"></span>{{ d }}
+              </li>
+            </sc-for>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="glossario" style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Glossário</h2>
+    <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">Termos e siglas que aparecem no atendimento, em linguagem simples.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+      <sc-for list="{{ glossary }}" as="g" hint-placeholder-count="9">
+        <div style="background:oklch(0.995 0.005 75);border:1px solid oklch(0.92 0.02 70);border-radius:14px;padding:16px 18px">
+          <div style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:15px;margin-bottom:5px;letter-spacing:-0.01em">{{ g.term }}</div>
+          <p style="margin:0;font-size:13.5px;line-height:1.6;color:oklch(0.45 0.02 60)">{{ g.def }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section id="denuncia" style="max-width:1000px;margin:0 auto;padding:60px 20px 72px">
+    <div style="border-radius:12px;background:var(--paper-raised);border:1px solid var(--line);border-top:2px solid var(--accent);padding:clamp(22px,4vw,38px)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--accent)">
+        <i class="ph-bold ph-lock"></i>
+        <span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Canal anônimo</span>
+      </div>
+      <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 10px;color:var(--ink)">Registrar uma denúncia</h2>
+      <p style="font-size:15.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 24px;max-width:56ch;text-wrap:pretty">Não pedimos nome, e-mail ou telefone. Nenhum endereço de IP é registrado e o formulário não usa cookies de rastreamento. Um único passo: escreva e envie.</p>
+
+      <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:26px">
+          <span style="display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:9px;background:oklch(0.9 0.05 150);color:oklch(0.35 0.07 150)"><i class="ph-bold ph-check"></i></span>
+          <h3 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:19px;margin:14px 0 8px;color:var(--ink)">Denúncia registrada</h3>
+          <p style="font-size:14.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 6px;max-width:52ch">Seu relato foi enviado sem qualquer identificação. Guarde o protocolo abaixo se quiser acompanhar em um posto de atendimento.</p>
+          <p style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:18px;font-weight:500;letter-spacing:0.04em;margin:10px 0 18px;color:var(--accent)">{{ protocol }}</p>
+          <button type="button" onClick="{{ resetForm }}" style="background:transparent;border:1px solid var(--line);border-radius:7px;padding:11px 18px;font-family:Karla,sans-serif;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer">Fazer outra denúncia</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;gap:18px;max-width:620px">
+          <label style="display:grid;gap:7px">
+            <span style="font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Município</span>
+            <select value="{{ city }}" onChange="{{ onCity }}" style="appearance:none;width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60);cursor:pointer">
+              <sc-for list="{{ cityNames }}" as="c" hint-placeholder-count="6">
+                <option value="{{ c }}">{{ c }}</option>
+              </sc-for>
+            </select>
+          </label>
+          <label style="display:grid;gap:7px">
+            <span style="font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Tipo de ocorrência</span>
+            <select value="{{ kind }}" onChange="{{ onKind }}" style="appearance:none;width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60);cursor:pointer">
+              <option value="">Selecione uma opção</option>
+              <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="5">
+                <option value="{{ k }}">{{ k }}</option>
+              </sc-for>
+            </select>
+          </label>
+          <label style="display:grid;gap:7px">
+            <span style="font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Descrição</span>
+            <textarea value="{{ desc }}" onChange="{{ onDesc }}" rows="5" placeholder="Conte o que aconteceu com suas palavras. Não é preciso citar seu nome." style="width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;line-height:1.55;color:oklch(0.24 0.02 60);resize:vertical"></textarea>
+          </label>
+          <label style="display:grid;gap:7px">
+            <span style="font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Local e data <span style="font-weight:400;color:oklch(0.55 0.02 60)">(opcional)</span></span>
+            <input value="{{ place }}" onChange="{{ onPlace }}" placeholder="Ex.: posto de saúde do centro, 12/03" style="width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60)" />
+          </label>
+          <label style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap" aria-hidden="true">
+            Não preencha este campo
+            <input value="{{ hp }}" onChange="{{ onHp }}" tabindex="-1" autocomplete="off" />
+          </label>
+          <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
+            <p style="display:flex;align-items:center;gap:7px;margin:0;font-size:13.5px;font-weight:600;color:oklch(0.5 0.14 30)"><i class="ph-bold ph-warning-circle" style="font-size:15px"></i>{{ sendError }}</p>
+          </sc-if>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px">
+            <button type="button" onClick="{{ submit }}" style="{{ submitStyle }}">
+              <i class="ph-bold ph-{{ submitIcon }}" style="{{ submitIconStyle }}"></i>{{ submitLabel }}
+            </button>
+            <span style="font-size:12.5px;color:oklch(0.52 0.02 60);display:flex;align-items:center;gap:6px"><i class="ph-bold ph-eye-slash" style="font-size:14px"></i>Sem IP, sem login, sem histórico</span>
+          </div>
+          <p style="font-size:13px;line-height:1.55;color:oklch(0.5 0.02 60);margin:0;max-width:56ch">Em caso de risco imediato, ligue 190. Para orientação sobre violência e discriminação, ligue 100 (Direitos Humanos) — ambos gratuitos e sigilosos.</p>
+        </div>
+      </sc-if>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid oklch(0.91 0.02 70);background:oklch(0.97 0.014 75)">
+    <div style="max-width:1000px;margin:0 auto;padding:30px 20px 40px;display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-end">
+      <div>
+        <div style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:15px;margin-bottom:5px">Conecta Direitos</div>
+        <p style="font-size:13px;line-height:1.6;color:oklch(0.5 0.02 60);margin:0;max-width:46ch">Cartilha digital de orientação, cidadania e respeito na prática pública. Municípios da Serra da Ibiapaba, Ceará.</p>
+      </div>
+      <button type="button" onClick="{{ quickExit }}" style="display:flex;align-items:center;gap:7px;background:none;border:1px solid var(--line);border-radius:7px;padding:10px 16px;font-family:Karla,sans-serif;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer"><i class="ph-bold ph-sign-out" style="font-size:15px"></i>Saída rápida</button>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+// Backend das denúncias anônimas (Supabase). Crie um projeto gratuito em
+// supabase.com, rode o SQL de supabase-schema.sql nele, e cole aqui a
+// Project URL e a chave "anon public" (Settings > API). Essa chave é
+// pública por design: a política de RLS do schema só permite INSERT,
+// então ninguém consegue ler denúncias de terceiros com ela.
+const SUPABASE_URL = "https://sovnstjtiulvzdblmxts.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvdm5zdGp0aXVsdnpkYmxteHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2NzY4NDYsImV4cCI6MjEwMzI1Mjg0Nn0.z1QhuYaqksQ2SHDjcFZZWSy_bAx5_NA4Nzis64ddbnw";
+
+const PALETTE = {
+  apoio: { bg: "oklch(0.93 0.05 300)", fg: "oklch(0.34 0.08 300)" },
+  saude: { bg: "oklch(0.92 0.05 150)", fg: "oklch(0.32 0.07 155)" },
+  lazer: { bg: "oklch(0.93 0.055 60)", fg: "oklch(0.36 0.08 50)" }
+};
+
+// Fontes: Guia_Oficial_Apoio_Saude_Lazer_Ibiapaba_v2.pdf (6 municípios) e
+// Guia_Oficial_Ibiapina_Carnaubal_Croata.pdf (os outros 3), ambos fornecidos
+// pelo dono do site — "dados oficiais cruzados (Secretarias, SSPDS-CE e
+// Diários Oficiais), agosto de 2026". Endereço/telefone vêm de lá.
+//
+// As coordenadas GPS que vinham NOS PDFs eram inventadas/aproximadas (ex.:
+// a do CREAS de Tianguá caía a >1km da rua real informada) — foram
+// descartadas. Em vez disso, cada pin abaixo foi geocodificado de verdade
+// via Nominatim/OpenStreetMap a partir do texto do endereço. Onde a rua não
+// tem cobertura no OSM (comum em cidades pequenas do interior), o pin usa o
+// centro do município como aproximação honesta e leva `approx: true` — a UI
+// avisa isso ao usuário em vez de fingir precisão que não existe.
+const CITIES = {
+  "Tianguá": {
+    center: [-3.7322, -40.9917],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (Tianguá)", detail: "Rua Teófilo Ramos, 299 – Centro", icon: "users", phone: "(88) 3671-2655", lat: -3.7233199, lng: -40.9938049 },
+      { cat: "apoio", role: "Delegacia", name: "Polícia Civil Tianguá", detail: "Rua Zeferino Ferreira – Gov. Ferraz", icon: "shield-warning", phone: "(88) 3671-9328", lat: -3.7314747, lng: -40.9962167 },
+      { cat: "saude", role: "Saúde mental", name: "CAPS II Tianguá", detail: "Atendimento via Secretaria de Saúde", icon: "brain", phone: "(88) 99334-6911", lat: -3.7322, lng: -40.9917, approx: true },
+      { cat: "saude", role: "Urgência", name: "Hosp. Madalena Nunes", detail: "Av. Moisés Moita, 785 - Nenê Plácido", icon: "heartbeat", phone: "Plantão 24h", lat: -3.7180770, lng: -40.9838440 },
+      { cat: "lazer", role: "Lazer seguro", name: "Praça dos Eucaliptos", detail: "Área central de convívio (Polo de Lazer)", icon: "park", phone: "", lat: -3.7322, lng: -40.9917, approx: true }
+    ]
+  },
+  "Viçosa do Ceará": {
+    center: [-3.5631, -41.0947],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (Viçosa)", detail: "Loteamento Manoel Joana, S/N - Bairro de Fátima", icon: "users", phone: "(88) 3632-1242", lat: -3.5631, lng: -41.0947, approx: true },
+      { cat: "apoio", role: "Delegacia", name: "Polícia Civil Viçosa", detail: "Av. Sebastião Magalhães Nogueira, s/n, Fátima", icon: "shield-warning", phone: "(88) 3632-1112", lat: -3.5631, lng: -41.0947, approx: true },
+      { cat: "saude", role: "Saúde mental", name: "CAPS Viçosa do Ceará", detail: "Rua Lamartine Nogueira - Centro", icon: "brain", phone: "Acolhimento Local", lat: -3.5772035, lng: -41.0869068 },
+      { cat: "lazer", role: "Lazer seguro", name: "Igreja do Céu", detail: "Polo Turístico - Cartão Postal", icon: "mountains", phone: "", lat: -3.5652901, lng: -41.0949896 }
+    ]
+  },
+  "Ubajara": {
+    center: [-3.8544, -40.9211],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (Ubajara)", detail: "Praça Joaquim Mulato, 295 (ou R. 24 de Agosto, 190) - Centro", icon: "users", phone: "(88) 99635-7356", lat: -3.8556518, lng: -40.9204405 },
+      { cat: "apoio", role: "Delegacia", name: "Polícia Civil Ubajara", detail: "Rua Prudêncio Furtado Neto, 82 - Grijalva F. da Costa", icon: "shield-warning", phone: "(88) 3634-1747", lat: -3.8544, lng: -40.9211, approx: true },
+      { cat: "saude", role: "Saúde mental", name: "CAPS Ubajara", detail: "Atendimento via Secretaria de Saúde", icon: "brain", phone: "(88) 3634-1300 (Pref)", lat: -3.8544, lng: -40.9211, approx: true },
+      { cat: "lazer", role: "Lazer seguro", name: "Parque Nac. de Ubajara", detail: "Unidade de Conservação Ambiental (ICMBio)", icon: "mountains", phone: "", lat: -3.7693394, lng: -40.8879025 }
+    ]
+  },
+  "São Benedito": {
+    center: [-4.0442, -40.8678],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (S. Benedito)", detail: "Rua Abdoral Rodrigues, 1000 - Centro", icon: "users", phone: "(88) 3626-2076", lat: -4.0416974, lng: -40.8656886 },
+      { cat: "apoio", role: "Delegacia", name: "Polícia Civil S. Benedito", detail: "Rua Min. Antônio Coelho, 854 - Centro", icon: "shield-warning", phone: "(88) 3626-6212", lat: -4.0451317, lng: -40.8677462 },
+      { cat: "saude", role: "Urgência", name: "UPA 24h São Benedito", detail: "Av. Tab. Silva, S/N - Centro", icon: "heartbeat", phone: "Plantão 24h", lat: -4.0442, lng: -40.8678, approx: true },
+      { cat: "lazer", role: "Lazer seguro", name: "Praça de São Sebastião", detail: "Amplo espaço central de convívio", icon: "park", phone: "", lat: -4.0442, lng: -40.8678, approx: true }
+    ]
+  },
+  "Ibiapina": {
+    center: [-3.9228, -40.8889],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (Ibiapina)", detail: "Rua Capitão Pedro, S/N - Centro", icon: "users", phone: "(88) 3653-1125", lat: -3.9224920, lng: -40.8881214 },
+      { cat: "apoio", role: "Delegacia", name: "Polícia Civil Ibiapina", detail: "Rua Francisco Bernardo Sobrinho, 75", icon: "shield-warning", phone: "(88) 3653-1300", lat: -3.9228, lng: -40.8889, approx: true },
+      { cat: "saude", role: "Saúde mental", name: "CAPS Ibiapina", detail: "Av. Deputado Alvaro Soares, S/N", icon: "brain", phone: "(88) 3653-1144", lat: -3.9228, lng: -40.8889, approx: true },
+      { cat: "saude", role: "Urgência", name: "Hosp. Mun. Maria Wanderley", detail: "Rua Valdemar Tavares - Centro", icon: "heartbeat", phone: "Plantão 24h", lat: -3.9228, lng: -40.8889, approx: true },
+      { cat: "lazer", role: "Lazer seguro", name: "Mirante da Ibiapaba", detail: "Ponto Turístico Público de Ibiapina", icon: "mountains", phone: "", lat: -3.9228, lng: -40.8889, approx: true }
+    ]
+  },
+  "Guaraciaba do Norte": {
+    center: [-4.1669, -40.7478],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (Guaraciaba)", detail: "Rua Francisco Bezerra S/N – Centro", icon: "users", phone: "Atendimento Presencial", lat: -4.1613760, lng: -40.7514268 },
+      { cat: "apoio", role: "Delegacia", name: "Polícia Civil", detail: "Rua Laurentino de Oliveira Memória, 6", icon: "shield-warning", phone: "(88) 3652-2001", lat: -4.1663238, lng: -40.7546263 },
+      { cat: "saude", role: "Urgência", name: "Hosp. Mun. São José", detail: "Rua Monsenhor Furtado, S/N", icon: "heartbeat", phone: "Plantão 24h", lat: -4.1605625, lng: -40.7500195 },
+      { cat: "lazer", role: "Lazer seguro", name: "Praça do Cristo", detail: "Mirante e espaço de encontro", icon: "mountains", phone: "", lat: -4.1669, lng: -40.7478, approx: true }
+    ]
+  },
+  "Carnaubal": {
+    center: [-4.1667, -40.9428],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (Carnaubal)", detail: "Av. Paulo Sarasate (Shopping do Cidadão)", icon: "users", phone: "(88) 3650-1139", lat: -4.1620093, lng: -40.9413400 },
+      { cat: "apoio", role: "Delegacia", name: "Polícia Civil Carnaubal", detail: "Rua Simplício Damasceno - Centro", icon: "shield-warning", phone: "(88) 3650-1222", lat: -4.1643606, lng: -40.9452822 },
+      { cat: "saude", role: "Saúde mental", name: "Atenção em Saúde Mental", detail: "Atendimento via Secretaria de Saúde", icon: "brain", phone: "(88) 3650-1155", lat: -4.1646289, lng: -40.9409864 },
+      { cat: "saude", role: "Urgência", name: "Hosp. Mun. Frota Gentil", detail: "Rua Sete de Setembro, S/N - Centro", icon: "heartbeat", phone: "Plantão 24h", lat: -4.1667, lng: -40.9428, approx: true },
+      { cat: "lazer", role: "Lazer seguro", name: "Praça da Matriz", detail: "Área central de convívio e lazer", icon: "park", phone: "", lat: -4.1667, lng: -40.9428, approx: true }
+    ]
+  },
+  "Croatá": {
+    center: [-4.4000, -40.9108],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (Croatá)", detail: "Rua Manoel Braga, 573 - Caroba", icon: "users", phone: "(88) 3658-1122", lat: -4.4133641, lng: -40.8997829 },
+      { cat: "apoio", role: "Delegacia", name: "Unidade Policial Croatá", detail: "Rua Ediberto Lopes, S/N – Centro", icon: "shield-warning", phone: "(88) 3658-1190", lat: -4.4000, lng: -40.9108, approx: true },
+      { cat: "saude", role: "Saúde mental", name: "Equipe Multiprofissional", detail: "Atendimento via Posto Central/Sec. Saúde", icon: "brain", phone: "(88) 3658-1133", lat: -4.4000, lng: -40.9108, approx: true },
+      { cat: "saude", role: "Urgência", name: "Hosp. Monsenhor Antonino", detail: "Rua Leonel Magalhães - Centro", icon: "heartbeat", phone: "Plantão 24h", lat: -4.4000, lng: -40.9108, approx: true },
+      { cat: "lazer", role: "Lazer seguro", name: "Praça Central de Croatá", detail: "Ponto de encontro urbano e social", icon: "park", phone: "", lat: -4.4000, lng: -40.9108, approx: true }
+    ]
+  },
+  "Ipu": {
+    center: [-4.3219, -40.7108],
+    pins: [
+      { cat: "apoio", role: "Acolhimento social", name: "CREAS (Ipu)", detail: "Rua Doutor Felix Candido, 607 – Alto dos Quatorze", icon: "users", phone: "(88) 9970-1225", lat: -4.3342761, lng: -40.7218760 },
+      { cat: "apoio", role: "Delegacia", name: "Polícia Civil Ipu", detail: "R. Cel. Félix, 955 - Centro", icon: "shield-warning", phone: "(88) 3683-3911", lat: -4.3235378, lng: -40.7111510 },
+      { cat: "saude", role: "Saúde mental", name: "CAPS Ipu", detail: "Assistência Psicossocial", icon: "brain", phone: "(88) 3683-2115 (Saúde)", lat: -4.3219, lng: -40.7108, approx: true },
+      { cat: "lazer", role: "Lazer seguro", name: "Bica do Ipu", detail: "Parque Ecológico e Turístico", icon: "mountains", phone: "", lat: -4.3168736, lng: -40.7280967 }
+    ]
+  }
+};
+
+const STATE_CONTACTS = [
+  { name: "Direitos Humanos", number: "100" },
+  { name: "Polícia Militar", number: "190" },
+  { name: "Ouvidoria do SUS", number: "136" },
+  { name: "Violência contra a mulher", number: "180" },
+  { name: "SAMU", number: "192" }
+];
+
+const TRAILS = [
+  {
+    icon: "hospital", tone: "saude", title: "Fui destratado ou recusado em um serviço de saúde",
+    intro: "Recusa de atendimento e desrespeito ao nome social podem ser registrados na hora, sem custo, e geram resposta formal do órgão.",
+    steps: [
+      "Peça o nome completo e a função de quem atendeu. Se não informarem, anote o horário e o setor.",
+      "Procure a ouvidoria da unidade no mesmo dia e peça o número de protocolo por escrito.",
+      "Se a ouvidoria não resolver, ligue 136 (Ouvidoria do SUS) e informe o protocolo anterior.",
+      "Registre também aqui na cartilha, de forma anônima, para que o caso entre nos dados da região.",
+      "Se houve dano à saúde, procure a Defensoria Pública para orientação sobre reparação."
+    ],
+    bring: "Documento com foto, cartão SUS, o protocolo da ouvidoria e qualquer print, áudio ou nome de testemunha."
+  },
+  {
+    icon: "identification-card", tone: "lazer", title: "Quero retificar meu nome e gênero nos documentos",
+    intro: "Maiores de 18 anos fazem a alteração direto no cartório, sem laudo médico, sem autorização judicial e sem cirurgia.",
+    steps: [
+      "Reúna certidão de nascimento atualizada, RG, CPF, título de eleitor e comprovante de endereço.",
+      "Vá ao Cartório de Registro Civil e peça o requerimento de alteração de prenome e gênero.",
+      "Se não tiver condições de pagar as taxas, peça gratuidade na Defensoria Pública antes de ir ao cartório.",
+      "Com a nova certidão em mãos, atualize CPF, RG, título de eleitor, cartão SUS, banco e escola ou trabalho.",
+      "Guarde uma cópia da nova certidão no celular para usar em atendimentos."
+    ],
+    bring: "Certidão de nascimento recente, documentos pessoais, comprovante de endereço e, se for o caso, o pedido de gratuidade."
+  },
+  {
+    icon: "shield-warning", tone: "apoio", title: "Sofri agressão ou ameaça",
+    intro: "Discriminação por orientação sexual e identidade de gênero é equiparada ao crime de racismo. A denúncia pode ser feita em qualquer delegacia.",
+    steps: [
+      "Se houver risco imediato, ligue 190 e vá para um lugar com movimento de pessoas.",
+      "Em caso de lesão, procure atendimento médico e peça que o registro descreva a agressão.",
+      "Registre boletim de ocorrência. Você pode pedir que conste a motivação discriminatória.",
+      "Salve provas: prints de mensagens, áudios, fotos das lesões com data e contato de testemunhas.",
+      "Procure a Defensoria Pública para medida protetiva e acompanhamento do caso."
+    ],
+    bring: "Documento com foto, provas salvas em nuvem ou em outro aparelho, e o atendimento médico se houver."
+  },
+  {
+    icon: "graduation-cap", tone: "saude", title: "Estou sofrendo discriminação na escola ou no trabalho",
+    intro: "Escola e empresa têm obrigação legal de agir. O registro por escrito é o que garante a resposta.",
+    steps: [
+      "Escreva o que aconteceu com datas, nomes e horários enquanto a memória está fresca.",
+      "Entregue o relato à direção da escola ou ao setor de pessoal e exija recibo ou protocolo.",
+      "Na escola, acione também o Conselho Tutelar (se menor de 18) ou a Secretaria de Educação.",
+      "No trabalho, procure o sindicato da categoria ou o Ministério Público do Trabalho.",
+      "Se nada mudar em até 15 dias, leve o protocolo à Defensoria Pública."
+    ],
+    bring: "Cópia do relato entregue, protocolo de recebimento, prints e nomes de quem presenciou."
+  }
+];
+
+const TEMPLATES = [
+  {
+    icon: "file-text", tone: "saude", title: "Requerimento de uso do nome social",
+    purpose: "Para entregar em posto de saúde, hospital, escola ou repartição pública.",
+    body: "Ao [nome do órgão ou unidade]\n\nEu, [nome civil], portador(a) do CPF [número], requeiro o registro e o uso do meu nome social [nome social] em todos os atendimentos, cadastros, fichas, listas de chamada e crachás desta instituição, conforme o Decreto nº 8.727/2016 e a Portaria nº 1.820/2009 do Ministério da Saúde.\n\nSolicito confirmação por escrito do atendimento deste requerimento.\n\n[cidade], [data]\n[assinatura]"
+  },
+  {
+    icon: "megaphone", tone: "apoio", title: "Denúncia à ouvidoria",
+    purpose: "Para registrar recusa de atendimento ou desrespeito em serviço público.",
+    body: "À Ouvidoria de [nome do órgão]\n\nNo dia [data], às [hora], no setor [setor], fui atendido(a) por [nome ou descrição do profissional] e ocorreu o seguinte: [descreva os fatos de forma objetiva].\n\nEntendo que a conduta configura discriminação por [orientação sexual / identidade de gênero] e desrespeito ao meu direito de atendimento humanizado.\n\nSolicito: apuração dos fatos, resposta formal no prazo legal e o número de protocolo desta manifestação.\n\nContato para resposta: [opcional]\n[cidade], [data]"
+  },
+  {
+    icon: "gavel", tone: "lazer", title: "Pedido de atendimento na Defensoria",
+    purpose: "Para agilizar o primeiro atendimento jurídico gratuito.",
+    body: "À Defensoria Pública de [município]\n\nEu, [nome], [idade] anos, residente em [endereço], solicito atendimento jurídico gratuito para o seguinte caso: [resuma em até cinco linhas].\n\nJá tomei as seguintes providências: [boletim de ocorrência nº / protocolo de ouvidoria nº / nenhuma].\n\nDeclaro não ter condições de pagar honorários e custas sem prejuízo do meu sustento.\n\nTelefone de contato: [número]\n[cidade], [data]"
+  }
+];
+
+const GLOSSARY = [
+  { term: "Nome social", def: "Nome pelo qual a pessoa se identifica e é reconhecida socialmente. Deve ser usado em atendimentos públicos mesmo antes de alterar documentos." },
+  { term: "Retificação", def: "Alteração oficial de prenome e gênero na certidão e nos documentos, feita em cartório a partir dos 18 anos." },
+  { term: "Identidade de gênero", def: "O gênero com que a pessoa se identifica, independentemente do sexo registrado no nascimento." },
+  { term: "Orientação sexual", def: "Por quem a pessoa sente atração afetiva e sexual. Não se confunde com identidade de gênero." },
+  { term: "Cisgênero / transgênero", def: "Cis: a identidade de gênero coincide com o registro de nascimento. Trans: não coincide." },
+  { term: "Atendimento humanizado", def: "Atendimento sem julgamento, com sigilo e escuta, previsto na Política Nacional de Humanização do SUS." },
+  { term: "PrEP e PEP", def: "PrEP é o medicamento tomado antes da exposição ao HIV. PEP é o uso emergencial após exposição, iniciado em até 72 horas. Ambos gratuitos no SUS." },
+  { term: "IST", def: "Infecção sexualmente transmissível. Testagem gratuita, rápida e sigilosa na UBS." },
+  { term: "CAPS", def: "Centro de Atenção Psicossocial: serviço público de saúde mental, com atendimento direto, sem necessidade de encaminhamento." },
+  { term: "CRAS", def: "Centro de Referência de Assistência Social: porta de entrada para benefícios, Cadastro Único e acompanhamento familiar." },
+  { term: "Medida protetiva", def: "Decisão judicial que proíbe o agressor de se aproximar ou entrar em contato com a vítima." },
+  { term: "Ouvidoria", def: "Canal oficial de reclamação de cada órgão público. Gera protocolo e obriga resposta formal." }
+];
+
+const DOS = [
+  "Pergunte “como você quer ser chamado?” e use esse nome em toda a conversa, inclusive ao chamar na sala de espera.",
+  "Registre o nome social no sistema e nas fichas, junto ao nome civil, sem expor a pessoa em voz alta.",
+  "Trate informações sobre vida afetiva e corpo como dado sigiloso, restrito a quem participa do cuidado.",
+  "Corrija colegas em particular quando houver erro de tratamento e retome o atendimento normalmente.",
+  "Ofereça informação sobre testagem, PrEP, PEP e saúde mental como rotina, não como suspeita.",
+  "Se não souber responder, diga que vai verificar e dê um retorno com prazo."
+];
+
+const DONTS = [
+  "Perguntas sobre corpo, cirurgias ou práticas sexuais que não têm relação com o motivo do atendimento.",
+  "Comentar o caso com colegas em corredor, recepção ou grupos de mensagem.",
+  "Insistir no nome civil, corrigir a pessoa ou tratá-la no gênero que ela não usa.",
+  "Sugerir tratamento, terapia ou orientação religiosa para mudar orientação sexual ou identidade de gênero: é proibido.",
+  "Pedir laudo, autorização ou acompanhante como condição para atender.",
+  "Tratar a pessoa como exceção ou caso curioso na frente de outras pessoas."
+];
+
+const KINDS = [
+  "Discriminação em serviço público",
+  "Recusa de atendimento em saúde",
+  "Desrespeito ao nome social",
+  "Violência física ou ameaça",
+  "Agressão verbal ou injúria",
+  "Discriminação no trabalho ou escola",
+  "Outra situação"
+];
+
+const RIGHTS = [
+  { icon: "gavel", title: "Discriminação é crime", text: "Desde 2019, injúria e discriminação por orientação sexual ou identidade de gênero são equiparadas ao crime de racismo, com pena de reclusão. Registre boletim de ocorrência e guarde provas: prints, áudios, testemunhas.", where: "Delegacia ou Defensoria Pública", tone: "apoio" },
+  { icon: "identification-card", title: "Nome e gênero no registro", text: "Pessoas trans e travestis maiores de 18 anos podem retificar nome e gênero direto no cartório, sem laudo, sem autorização judicial e sem cirurgia. Basta documento e requerimento.", where: "Cartório de Registro Civil", tone: "lazer" },
+  { icon: "seal-check", title: "Nome social é obrigatório", text: "Escolas, hospitais e repartições públicas devem chamar você pelo nome social em atendimentos, listas e crachás, mesmo antes da retificação. A recusa pode ser denunciada.", where: "Ouvidoria do órgão · 100", tone: "saude" },
+  { icon: "users-three", title: "Família e união", text: "União estável e casamento civil entre pessoas do mesmo sexo têm plena validade, assim como adoção conjunta, pensão e inclusão do cônjuge como dependente.", where: "Cartório · INSS", tone: "apoio" }
+];
+
+const HEALTH = [
+  { icon: "heartbeat", title: "Atendimento humanizado", text: "Você tem direito a ser atendido sem julgamento, sem perguntas invasivas e com sigilo sobre sua vida afetiva. Pode pedir acompanhante e recusar exames que não entendeu.", where: "Ouvidoria do SUS · 136", tone: "saude" },
+  { icon: "brain", title: "Saúde mental", text: "Ansiedade e sofrimento causados por preconceito têm tratamento no SUS. O CAPS atende sem encaminhamento prévio. Nenhum profissional pode propor terapia de conversão: isso é proibido.", where: "CAPS da região", tone: "apoio" },
+  { icon: "shield-plus", title: "Prevenção e testagem", text: "Testes de HIV, sífilis e hepatites são gratuitos, rápidos e sigilosos na UBS. PrEP e PEP estão disponíveis pelo SUS; a PEP deve ser iniciada em até 72 horas após a exposição.", where: "UBS do seu município", tone: "lazer" },
+  { icon: "syringe", title: "Hormonização e cuidado trans", text: "O processo transexualizador é oferecido pelo SUS com acompanhamento multiprofissional. Comece pela UBS e peça o encaminhamento formal por escrito.", where: "UBS · referência estadual", tone: "saude" }
+];
+
+const CARD = "background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:22px";
+
+class Component extends DCLogic {
+  state = { city: "Tianguá", filter: "apoio", openTrail: 0, copied: -1, kind: "", desc: "", place: "", hp: "", sent: false, protocol: "", sending: false, sendError: "" };
+
+  // Ícones são Phosphor via fonte/CSS (@phosphor-icons/web) — renderizam
+  // puro CSS, sem hidratação em JS. Por isso não há mais um método icons()
+  // nem o hack de intervalo que existia para o Lucide (que precisava
+  // re-hidratar <svg> depois de cada atualização/placeholder de streaming).
+  componentDidMount() {
+    this.initMap();
+  }
+  componentDidUpdate() {
+    this.syncMap();
+  }
+  componentWillUnmount() {
+    if (this._map) { this._map.remove(); this._map = null; }
+  }
+
+  // --- Mapa real (Leaflet + OpenStreetMap) ---------------------------------
+  // Coordenadas de CITIES[...]: center vem de fonte pública (Wikipedia/IBGE/
+  // IPECE); pins vêm de geocodificação real (Nominatim/OSM) a partir dos
+  // endereços dos dois PDFs oficiais fornecidos pelo dono do site. Pins sem
+  // cobertura de rua no OSM caem no centro do município e levam `approx:
+  // true` — sempre avise isso na UI (ver phoneLine/approxLine abaixo), nunca
+  // apresente como endereço exato.
+  escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+
+  initMap() {
+    const el = document.getElementById("leaflet-map");
+    if (!el || this._map || !window.L) return;
+    this._map = window.L.map(el, { scrollWheelZoom: false }).setView([-3.95, -40.95], 10);
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
+    }).addTo(this._map);
+    this._markers = window.L.layerGroup().addTo(this._map);
+    this.syncMap();
+  }
+
+  syncMap() {
+    if (!this._map || !this._markers) return;
+    const { city, filter } = this.state;
+    const data = CITIES[city] || CITIES["Tianguá"];
+    this._map.setView(data.center, 13);
+    this._markers.clearLayers();
+    // Mostra somente os pontos da categoria selecionada — não o mapa inteiro.
+    const visible = data.pins.filter(p => p.cat === filter);
+    visible.forEach(p => {
+      const pal = PALETTE[p.cat];
+      const border = p.approx ? "2px dashed #fff" : "2px solid #fff";
+      const opacity = p.approx ? "0.72" : "1";
+      const icon = window.L.divIcon({
+        className: "",
+        html: "<div style=\"width:30px;height:30px;border-radius:50% 50% 50% 4px;display:flex;align-items:center;justify-content:center;background:" + pal.bg + ";border:" + border + ";opacity:" + opacity + ";box-shadow:0 2px 6px rgba(0,0,0,.28)\"><i class=\"ph-bold ph-" + p.icon + "\" style=\"font-size:15px;color:" + pal.fg + "\"></i></div>",
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30]
+      });
+      const phoneLine = p.phone ? "<div style=\"font-size:11.5px;color:#333;margin-top:4px\">" + this.escapeHtml(p.phone) + "</div>" : "";
+      const approxLine = p.approx ? "<div style=\"font-size:11px;color:#a15c00;margin-top:6px\">📍 Localização aproximada (centro do município) — confirme o endereço por telefone.</div>" : "";
+      const html = "<div style=\"font-family:Karla,system-ui,sans-serif;max-width:220px\">" +
+        "<div style=\"font-family:Newsreader,Georgia,serif;font-weight:700;font-size:13.5px;margin-bottom:4px\">" + this.escapeHtml(p.name) + "</div>" +
+        "<div style=\"font-size:12px;line-height:1.5;color:#555\">" + this.escapeHtml(p.detail) + "</div>" +
+        phoneLine + approxLine +
+        "</div>";
+      window.L.marker([p.lat, p.lng], { icon }).addTo(this._markers).bindPopup(html);
+    });
+  }
+
+  // --- Denúncia anônima (Supabase Edge Function) ----------------------------
+  // Vai pra Edge Function submit-denuncia, não direto pra tabela: a tabela
+  // não aceita mais INSERT da chave anon (ver supabase-schema.sql) — só a
+  // function, que roda com service_role e aplica limite de 5 envios por IP
+  // a cada 30 min antes de gravar. Isso é o que impede alguém de escrever
+  // um script batendo direto na API REST pra gerar spam; o honeypot do
+  // formulário sozinho não resolveria isso.
+  async submitDenuncia(payload) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      throw new Error("Backend ainda não configurado (SUPABASE_URL / SUPABASE_ANON_KEY vazios no código).");
+    }
+    const res = await fetch(SUPABASE_URL.replace(/\/$/, "") + "/functions/v1/submit-denuncia", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+    if (res.status === 429) {
+      throw new Error("Muitos envios recentes deste dispositivo/rede. Aguarde um pouco e tente de novo.");
+    }
+    if (!res.ok) throw new Error("Falha ao enviar (HTTP " + res.status + ")");
+  }
+
+  chip(active, tone) {
+    const p = PALETTE[tone];
+    return "display:flex;align-items:center;gap:8px;cursor:pointer;font-family:Karla,sans-serif;font-size:14px;font-weight:600;border-radius:999px;padding:11px 17px;transition:all .15s;" +
+      (active
+        ? "background:" + p.bg + ";color:" + p.fg + ";border:1px solid " + p.fg
+        : "background:var(--paper-raised);color:var(--ink-soft);border:1px solid var(--line)");
+  }
+
+  iconBox(tone, size) {
+    const s = size || 42;
+    return "flex:none;display:flex;align-items:center;justify-content:center;width:" + s + "px;height:" + s + "px;border-radius:" + Math.round(s / 3.2) + "px;background:" + PALETTE[tone].bg + ";color:" + PALETTE[tone].fg;
+  }
+
+  renderVals() {
+    const { city, filter, sent, openTrail, copied } = this.state;
+    const data = CITIES[city] || CITIES["Tianguá"];
+    const set = k => v => this.setState({ [k]: v.target.value });
+
+    const filters = [
+      { key: "apoio", label: "Redes de Apoio", icon: "users" },
+      { key: "saude", label: "Saúde", icon: "stethoscope" },
+      { key: "lazer", label: "Lazer Seguro", icon: "sun" }
+    ].map(f => ({ ...f, style: this.chip(filter === f.key, f.key), onClick: () => this.setState({ filter: f.key }) }));
+
+    const pins = data.pins.map(p => ({
+      ...p,
+      onClick: () => this.setState({ filter: p.cat }),
+      dotStyle: this.iconBox(p.cat, 34),
+      hasPhone: !!p.phone
+    }));
+
+    const decorate = c => ({ ...c, style: CARD, iconStyle: this.iconBox(c.tone) });
+
+    const trails = TRAILS.map((t, i) => ({
+      ...t,
+      open: openTrail === i,
+      toggle: () => this.setState({ openTrail: openTrail === i ? -1 : i }),
+      wrapStyle: "background:var(--paper-raised);border:1px solid " + (openTrail === i ? "var(--ink-faint)" : "var(--line)") + ";border-radius:10px;overflow:hidden;transition:border-color .2s",
+      iconStyle: this.iconBox(t.tone, 38),
+      chevronStyle: "flex:none;color:var(--ink-faint);display:flex;transition:transform .2s;transform:rotate(" + (openTrail === i ? 180 : 0) + "deg)",
+      steps: t.steps.map((text, n) => ({ n: n + 1, text }))
+    }));
+
+    const templates = TEMPLATES.map((t, i) => ({
+      ...t,
+      iconStyle: this.iconBox(t.tone, 34),
+      btnLabel: copied === i ? "Texto copiado" : "Copiar texto",
+      btnIcon: copied === i ? "check" : "copy",
+      btnStyle: "margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:7px;padding:12px 18px;font-family:Karla,sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:1px solid " + (copied === i ? "oklch(0.85 0.06 155)" : "var(--line)") + ";background:" + (copied === i ? "oklch(0.94 0.045 150)" : "var(--paper)") + ";color:" + (copied === i ? "oklch(0.34 0.07 155)" : "var(--ink)"),
+      copy: () => {
+        const txt = t.body;
+        if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(() => {});
+        this.setState({ copied: i });
+        setTimeout(() => this.setState(s => (s.copied === i ? { copied: -1 } : {})), 2200);
+      }
+    }));
+
+    return {
+      city, cityNames: Object.keys(CITIES), onCity: set("city"),
+      // Ficha do município deriva direto dos pins reais (nunca inventa um
+      // campo — ex.: "Coletivo local" — que o Guia_Oficial... não confirma).
+      cityFacts: data.pins.map(p => ({ label: p.role, value: p.name })),
+      stateContacts: STATE_CONTACTS,
+      filters, pins,
+      hasConfirmedPins: data.pins.length > 0,
+      visiblePins: pins.filter(p => p.cat === filter),
+      listTitle: filters.find(f => f.key === filter).label + " · " + pins.filter(p => p.cat === filter).length + " locais em " + city,
+      trails, templates, glossary: GLOSSARY, dos: DOS, donts: DONTS,
+      rightsCards: RIGHTS.map(decorate),
+      healthCards: HEALTH.map(decorate),
+      kinds: KINDS,
+      kind: this.state.kind, desc: this.state.desc, place: this.state.place, hp: this.state.hp,
+      onKind: set("kind"), onDesc: set("desc"), onPlace: set("place"), onHp: set("hp"),
+      sent, notSent: !sent, protocol: this.state.protocol,
+      hasError: !!this.state.sendError, sendError: this.state.sendError,
+      submitIcon: this.state.sending ? "spinner" : "paper-plane-tilt",
+      submitIconStyle: "font-size:17px" + (this.state.sending ? ";animation:sc-spin .8s linear infinite" : ""),
+      submitLabel: this.state.sending ? "Enviando…" : "Enviar anonimamente",
+      submitStyle: "display:flex;align-items:center;gap:9px;border:none;border-radius:7px;padding:15px 24px;font-family:Karla,sans-serif;font-size:15.5px;font-weight:600;color:var(--paper-raised);" +
+        (this.state.sending
+          ? "background:oklch(0.55 0.02 60);cursor:default"
+          : "background:var(--ink);cursor:pointer"),
+      submit: async () => {
+        if (this.state.sending) return;
+        const { city, kind, desc, place, hp } = this.state;
+        if (hp) {
+          // Honeypot: campo escondido de humanos via CSS que só um preenchimento
+          // automático de formulário chega a tocar. Finge sucesso sem enviar
+          // nada, pra não ensinar o bot a se adaptar.
+          this.setState({ sent: true, protocol: "CD-" + Math.floor(100000 + Math.random() * 900000) });
+          return;
+        }
+        if (!kind || !desc.trim()) {
+          this.setState({ sendError: "Selecione o tipo de ocorrência e escreva a descrição." });
+          return;
+        }
+        this.setState({ sending: true, sendError: "" });
+        const protocol = "CD-" + Math.floor(100000 + Math.random() * 900000);
+        try {
+          await this.submitDenuncia({ city, kind, description: desc.trim(), place: place.trim() || null, protocol });
+          this.setState({ sent: true, sending: false, protocol });
+        } catch (err) {
+          this.setState({ sending: false, sendError: "Não foi possível enviar agora. Verifique sua conexão e tente novamente." });
+        }
+      },
+      resetForm: () => this.setState({ sent: false, kind: "", desc: "", place: "", hp: "", protocol: "", sendError: "" }),
+      quickExit: () => { window.location.replace("https://www.google.com"); }
+    };
+  }
+}
+</script>
+</body>
+</html>
