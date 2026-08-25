@@ -10,11 +10,16 @@ authored as a **Claude Design canvas** artifact, not a conventional web app proj
 
 The project is:
 
-- `Conecta Direitos.dc.html` — the entire app: markup template + view-model logic, in one file.
+- `index.html` — the entire app: markup template + view-model logic, in one file. Originally
+  authored as `Conecta Direitos.dc.html` (the Claude Design canvas convention); renamed to
+  `index.html` so static hosts (Vercel/Netlify/GitHub Pages) serve it at the site root with no
+  redirect and no URL-encoded space in the path. The content/format didn't change, just the name —
+  it's still a dc-runtime document underneath.
 - `support.js` — the vendored Claude Design canvas runtime (`dc-runtime`) that parses and boots
-  the `.dc.html` document in a plain browser. **Generated file — do not hand-edit.** Its header
-  says to rebuild via `cd dc-runtime && bun run build`, but no `dc-runtime` source tree exists in
-  this project; treat `support.js` as a fixed, opaque dependency.
+  the document in a plain browser regardless of its filename. **Generated file — do not
+  hand-edit.** Its header says to rebuild via `cd dc-runtime && bun run build`, but no
+  `dc-runtime` source tree exists in this project; treat `support.js` as a fixed, opaque
+  dependency.
 - `supabase-schema.sql` — the SQL to run once in a Supabase project's SQL Editor. Creates
   `denuncias` (the anonymous-report table) and `rate_limits` (support table for the Edge
   Function below), and deliberately grants the public `anon` key no access to either.
@@ -30,12 +35,12 @@ the Supabase dashboard or CLI — not part of the front-end build.
 
 ## Running / previewing
 
-Open `Conecta Direitos.dc.html` directly in a browser (double-click it, or `file://` path) —
+Open `index.html` directly in a browser (double-click it, or `file://` path) —
 `support.js` is loaded via a relative `<script src="./support.js">` and boots the page client-side.
 No dev server is required. There is no automated test suite; verify changes by opening the file
 and clicking through the UI manually.
 
-## Architecture of `Conecta Direitos.dc.html`
+## Architecture of `index.html`
 
 The file has two parts:
 
