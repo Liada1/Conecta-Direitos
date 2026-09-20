@@ -52,31 +52,31 @@
 <div style="min-height:100vh;background:oklch(0.985 0.012 75);color:oklch(0.24 0.02 60)">
 
   <header style="position:sticky;top:0;z-index:50;background:oklch(0.985 0.012 75 / 0.94);backdrop-filter:blur(10px);border-bottom:1px solid oklch(0.9 0.02 70)">
-    <div style="max-width:1000px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;justify-content:space-between">
-      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+    <div style="max-width:1000px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;row-gap:10px;align-items:center;gap:16px;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 auto">
         <div style="width:34px;height:34px;border-radius:11px;background:oklch(0.88 0.07 40);display:flex;align-items:center;justify-content:center;flex:none;color:oklch(0.32 0.08 35)"><i class="ph-bold ph-handshake"></i></div>
         <div style="min-width:0">
-          <div style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:16px;letter-spacing:-0.01em;line-height:1.1">Conecta Direitos</div>
+          <div style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:16px;letter-spacing:-0.01em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Conecta Direitos</div>
           <div style="font-size:11.5px;color:oklch(0.5 0.02 60);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Serra da Ibiapaba · Ceará</div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <label style="display:flex;align-items:center;gap:7px;background:oklch(0.99 0.008 75);border:1px solid oklch(0.89 0.02 65);border-radius:999px;padding:7px 12px 7px 14px">
-          <span style="color:oklch(0.5 0.03 50);display:flex"><i class="ph-bold ph-map-pin" style="font-size:15px"></i></span>
-          <select value="{{ city }}" onChange="{{ onCity }}" style="appearance:none;border:none;background:none;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;color:oklch(0.3 0.03 45);cursor:pointer;outline:none;max-width:140px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0">
+        <label style="display:flex;align-items:center;gap:7px;background:oklch(0.99 0.008 75);border:1px solid oklch(0.89 0.02 65);border-radius:999px;padding:7px 12px 7px 14px;min-width:0">
+          <span style="color:oklch(0.5 0.03 50);display:flex;flex:none"><i class="ph-bold ph-map-pin" style="font-size:15px"></i></span>
+          <select value="{{ city }}" onChange="{{ onCity }}" style="appearance:none;border:none;background:none;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;color:oklch(0.3 0.03 45);cursor:pointer;outline:none;max-width:min(140px,38vw);min-width:0;width:100%">
             <sc-for list="{{ cityNames }}" as="c" hint-placeholder-count="6">
               <option value="{{ c }}">{{ c }}</option>
             </sc-for>
           </select>
         </label>
-        <button type="button" onClick="{{ quickExit }}" style="display:flex;align-items:center;gap:7px;flex:none;background:var(--ink);color:var(--paper-raised);border:none;border-radius:7px;padding:10px 16px;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:oklch(0.32 0.02 55)">
+        <button type="button" onClick="{{ quickExit }}" style="display:flex;align-items:center;gap:7px;flex:none;background:var(--ink);color:var(--paper-raised);border:none;border-radius:7px;padding:10px clamp(12px,4vw,16px);font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:oklch(0.32 0.02 55)">
           <i class="ph-bold ph-sign-out" style="font-size:16px"></i>Saída rápida
         </button>
       </div>
     </div>
   </header>
 
-  <section style="max-width:1000px;margin:0 auto;padding:48px 20px 8px">
+  <section style="max-width:1000px;margin:0 auto;padding:clamp(32px,10vw,48px) 20px 8px">
     <p style="display:flex;align-items:center;gap:10px;margin:0 0 20px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint)"><span style="width:20px;height:1px;background:var(--line)"></span>Cartilha digital · 9 municípios da Ibiapaba</p>
     <h1 style="font-family:Newsreader,Georgia,serif;font-weight:600;font-style:italic;font-size:clamp(32px,7vw,50px);line-height:1.08;letter-spacing:-0.015em;margin:0 0 18px;max-width:19ch;text-wrap:pretty;color:var(--ink)">Orientação, cidadania e respeito na prática pública.</h1>
     <p style="font-size:17px;line-height:1.6;color:var(--ink-soft);max-width:52ch;margin:0 0 30px;text-wrap:pretty">Onde buscar apoio, quais são os seus direitos e como denunciar sem se expor. Escolha o seu município no topo da página: mapa, telefones e endereços mudam junto.</p>
@@ -91,7 +91,7 @@
     </div>
   </section>
 
-  <section id="mapa" style="max-width:1000px;margin:0 auto;padding:56px 20px 0">
+  <section id="mapa" style="max-width:1000px;margin:0 auto;padding:clamp(36px,9vw,56px) 20px 0">
     <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Mapa de acolhimento · {{ city }}</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 20px;max-width:52ch">Serviços e espaços do município com atendimento respeitoso. Toque em um filtro para ver os pontos.</p>
 
@@ -104,7 +104,7 @@
     </div>
 
     <div style="border-radius:20px;overflow:hidden;border:1px solid oklch(0.9 0.02 70)">
-      <div id="leaflet-map" style="height:340px;position:relative;z-index:0;background:oklch(0.96 0.02 130)"></div>
+      <div id="leaflet-map" style="height:clamp(230px,58vw,340px);position:relative;z-index:0;background:oklch(0.96 0.02 130)"></div>
       <div style="border-top:1px solid oklch(0.91 0.02 70);background:oklch(0.99 0.008 75);padding:16px 18px">
         <sc-if value="{{ hasConfirmedPins }}" hint-placeholder-val="{{ true }}">
           <div style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.02 60);margin-bottom:12px">{{ listTitle }}</div>
@@ -138,7 +138,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+    <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px">
       <div style="background:var(--paper-raised);border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:10px;padding:18px">
         <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-phone-call" style="font-size:15px;color:var(--accent)"></i>Vale para toda a região</div>
         <div style="display:grid;gap:9px">
@@ -165,7 +165,7 @@
     </div>
   </section>
 
-  <section id="trilhas" style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+  <section id="trilhas" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
     <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">O que fazer agora</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 20px;max-width:52ch">Escolha a situação mais parecida com a sua. Cada trilha diz o que levar, para onde ir e em que ordem.</p>
     <div style="display:grid;gap:10px">
@@ -198,10 +198,10 @@
     </div>
   </section>
 
-  <section style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+  <section style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
     <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Direitos legais e proteção</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">O que a lei garante e como acionar cada direito no serviço público.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px">
       <sc-for list="{{ rightsCards }}" as="c" hint-placeholder-count="4">
         <article style="{{ c.style }}">
           <span style="{{ c.iconStyle }}"><i class="ph-bold ph-{{ c.icon }}"></i></span>
@@ -215,10 +215,10 @@
     </div>
   </section>
 
-  <section style="max-width:1000px;margin:0 auto;padding:48px 20px 0">
+  <section style="max-width:1000px;margin:0 auto;padding:clamp(32px,9vw,48px) 20px 0">
     <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Saúde e bem-estar</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">Atendimento humanizado é direito, não favor. Use estes caminhos.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px">
       <sc-for list="{{ healthCards }}" as="c" hint-placeholder-count="4">
         <article style="{{ c.style }}">
           <span style="{{ c.iconStyle }}"><i class="ph-bold ph-{{ c.icon }}"></i></span>
@@ -232,10 +232,10 @@
     </div>
   </section>
 
-  <section id="modelos" style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+  <section id="modelos" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
     <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Modelos prontos</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:54ch">Textos para copiar, preencher e entregar. Onde aparece [entre colchetes], troque pelos seus dados.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px">
       <sc-for list="{{ templates }}" as="t" hint-placeholder-count="3">
         <article style="background:oklch(0.995 0.005 75);border:1px solid oklch(0.92 0.02 70);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px">
           <div style="display:flex;align-items:center;gap:10px">
@@ -250,7 +250,7 @@
     </div>
   </section>
 
-  <section id="servidores" style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+  <section id="servidores" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
     <div style="border-radius:12px;background:var(--paper-raised);border:1px solid var(--line);border-top:2px solid var(--accent);padding:clamp(22px,4vw,34px)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;color:var(--accent)">
         <i class="ph-bold ph-briefcase"></i>
@@ -258,7 +258,7 @@
       </div>
       <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 10px;color:var(--ink)">Servidores públicos e equipes de atendimento</h2>
       <p style="font-size:15.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 22px;max-width:56ch">A cartilha também é para recepção, enfermagem, escola, assistência social e guarda municipal. Duas listas curtas para consultar antes do atendimento.</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px">
         <div style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px">
           <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.4 0.07 155);margin-bottom:14px"><i class="ph-bold ph-check" style="font-size:15px"></i>Faça</div>
           <ul style="margin:0;padding:0;list-style:none;display:grid;gap:11px">
@@ -283,10 +283,10 @@
     </div>
   </section>
 
-  <section id="glossario" style="max-width:1000px;margin:0 auto;padding:60px 20px 0">
+  <section id="glossario" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
     <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Glossário</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">Termos e siglas que aparecem no atendimento, em linguagem simples.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px">
       <sc-for list="{{ glossary }}" as="g" hint-placeholder-count="9">
         <div style="background:oklch(0.995 0.005 75);border:1px solid oklch(0.92 0.02 70);border-radius:14px;padding:16px 18px">
           <div style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:15px;margin-bottom:5px;letter-spacing:-0.01em">{{ g.term }}</div>
@@ -296,7 +296,7 @@
     </div>
   </section>
 
-  <section id="denuncia" style="max-width:1000px;margin:0 auto;padding:60px 20px 72px">
+  <section id="denuncia" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 56px">
     <div style="border-radius:12px;background:var(--paper-raised);border:1px solid var(--line);border-top:2px solid var(--accent);padding:clamp(22px,4vw,38px)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--accent)">
         <i class="ph-bold ph-lock"></i>
