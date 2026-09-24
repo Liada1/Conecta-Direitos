@@ -1,0 +1,6 @@
+# Arquivos do repositório que não precisam ficar públicos no site.
+CLAUDE.md
+supabase/
+supabase-schema.sql
+.thumbnail
+*.pdf

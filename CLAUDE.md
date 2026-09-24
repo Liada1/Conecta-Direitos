@@ -25,9 +25,21 @@ The project is:
   Function below), and deliberately grants the public `anon` key no access to either.
 - `supabase/functions/submit-denuncia/index.ts` — a Supabase Edge Function; the *only* way a
   denúncia gets written (see "Anonymous reports" below).
-- `_headers` — Netlify-style HTTP response headers (clickjacking protection via
-  `X-Frame-Options`, etc.). Only takes effect if the host reads this convention (Netlify does;
-  GitHub Pages does not — see "Security measures").
+- `vercel.json` — the **real** HTTP security headers in production (CSP incl. `frame-ancestors`,
+  `X-Frame-Options`, `Permissions-Policy`, COOP/CORP) plus long cache for `vendor/`. The site is
+  live on Vercel at https://conectadireitos.vercel.app (canonical; `conecta-direitos.vercel.app`
+  redirects there).
+- `_headers` — the same headers in Netlify syntax. **Vercel ignores this file** (production had no
+  `X-Frame-Options` until `vercel.json` was added — verify with `curl -sI`). Kept in sync only in
+  case the host changes.
+- `vendor/` — self-hosted third-party assets: React/ReactDOM 18.3.1, Leaflet 1.9.4, Phosphor bold
+  2.1.1, and Newsreader/Karla/JetBrains Mono (latin + latin-ext woff2, `vendor/fonts/fonts.css`).
+  Byte-identical to the unpkg files whose SRI hashes were pinned before. `vendor/resources.js` sets
+  `window.__resources` so `support.js` loads React from here instead of unpkg (its `cdnScriptFor()`
+  checks that map) — the keys must match the URLs hardcoded in `support.js` exactly.
+- SEO files: `robots.txt`, `sitemap.xml`, `site.webmanifest`, `og-image.png` (1200×630 share
+  preview), `icon-512.png`. `.vercelignore` keeps `CLAUDE.md`, `supabase/`, the SQL and the PDFs
+  off the public site.
 
 There is no `package.json`, build tool, linter, or test suite for the front end. There is nothing
 to install or compile to preview the site. The Edge Function is Deno/TypeScript, deployed through
@@ -54,8 +66,11 @@ The file has two parts:
      bindings resolved against the view-model object.
    - `style-hover="…"` — a dc-runtime-specific attribute for hover styles (plain inline `style`
      covers the base state; there is no separate CSS/stylesheet file).
-   - `<helmet>…</helmet>` at the top of `<x-dc>` — head content (fonts, the Phosphor icon
-     stylesheet, global `<style>` with the design tokens described below).
+   - `<helmet>…</helmet>` at the top of `<x-dc>` — head content (local `vendor/` stylesheets for
+     fonts/icons/Leaflet, `leaflet.js`, global `<style>` with the design tokens described below,
+     focus-visible/skip-link/`.sr-only`/reduced-motion rules).
+   - camelCase attributes (`maxLength`, `tabIndex`, `autoComplete`) reach React correctly; lowercase
+     `tabindex` etc. don't. `aria-*` pass through, and `aria-x="{{ bool }}"` works.
 
 2. **Logic** — the `<script type="text/x-dc" data-dc-script data-props="{}">` block, defining
    `class Component extends DCLogic`. Key shape:
@@ -82,13 +97,12 @@ Redesigned away from the generic "AI-generated SaaS" look (Plus Jakarta Sans hea
 buttons everywhere, colored glow shadows, purple gradient-ish eyebrow badges, whole-section color
 washes) toward a more restrained editorial style, while keeping it minimal:
 
-- **Fonts** (Google Fonts, loaded in `<helmet>`): `Newsreader` (serif) for all headings —
+- **Fonts** (self-hosted in `vendor/fonts/`, not Google Fonts — keeps visitor IPs away from Google): `Newsreader` (serif) for all headings —
   `font-family:Newsreader,Georgia,serif` — `Karla` for body/UI text, `'JetBrains Mono'` for
   phone numbers, the denúncia protocol, and the eyebrow label. Don't reintroduce Plus Jakarta
   Sans/Inter/Roboto for headings — that combination is exactly the look this was moved away from.
-- **Icons**: `@phosphor-icons/web` (bold weight), loaded as a CSS icon font via
-  `<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">`
-  with an SRI `integrity` hash. Markup is `<i class="ph-bold ph-{name}">` — **not**
+- **Icons**: `@phosphor-icons/web` (bold weight), loaded as a CSS icon font from
+  `vendor/phosphor/style.css` (self-hosted copy of v2.1.1). Markup is `<i class="ph-bold ph-{name}">` — **not**
   `data-lucide`, which this replaced. Icon names differ from Lucide's (e.g. `heart-pulse` →
   `heartbeat`, `trees` → `park`, `send` → `paper-plane-tilt`); the full old→new mapping used for
   the migration is not stored anywhere in the repo — if you need to add a new icon, look it up
@@ -169,7 +183,8 @@ against the REST API. The Edge Function is what actually prevents that:
   it does not silently fake success.
 - The payload sent is `{ city, kind, description, place, protocol }` — no IP, name, email, or
   device info — to honor the page copy's anonymity promise. `protocol` is generated client-side
-  (`CD-######`, random) *before* the request and included in the payload specifically so the value
+  (`CD-XXXX-XXXX` via `makeProtocol()` — `crypto.getRandomValues`, no ambiguous chars; the Edge
+  Function also still accepts the old `CD-######`) *before* the request and included in the payload specifically so the value
   shown to the user is also stored server-side — the copy promises it can be used to "acompanhar
   em um posto de atendimento," which only works if staff can look it up later. Don't add fields or
   client-side storage (`localStorage`, analytics, etc.) to this flow without revisiting that copy.
@@ -180,17 +195,23 @@ against the REST API. The Edge Function is what actually prevents that:
 
 ## Security measures in place
 
-- **CSP** (`<meta http-equiv="Content-Security-Policy">` in `<head>`): restricts script/style/font/
-  img/connect sources to only what's actually used (self, the pinned unpkg CDN, Google Fonts, the
-  OSM tile servers, the Supabase project). Includes `'unsafe-eval'` in `script-src` — this is
+- **CSP** (`<meta http-equiv="Content-Security-Policy">` in `<head>`, duplicated as a real header in
+  `vercel.json`/`_headers` — keep all three identical except `frame-ancestors`, header-only):
+  everything is `'self'` except OSM tiles (`img-src`) and the Supabase project (`connect-src`).
+  No `'unsafe-inline'` in `script-src` (nothing needs it; JSON-LD isn't executed). Includes `'unsafe-eval'` in `script-src` — this is
   required, not optional: `support.js` runs the component logic via `new Function(...)`, and
   removing `unsafe-eval` breaks the entire page (map, filters, form). `connect-src` hardcodes the
   Supabase project URL — if you ever rotate `SUPABASE_URL`, update the CSP too (there's a comment
   next to it as a pointer).
-- **SRI**: the three CDN resources (Leaflet CSS/JS, Phosphor CSS) carry `integrity="sha384-…"` +
-  `crossorigin="anonymous"`. If you bump a pinned CDN version, you must recompute the hash (e.g.
-  `curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A`) or the resource will silently
-  fail to load.
+- **No CDN at runtime**: all libraries come from `vendor/`, so there is no SRI to maintain. To bump a
+  version, download the new files into `vendor/`. React is the exception: its version is pinned
+  inside the generated `support.js`, so it stays at 18.3.1 unless `support.js` itself is replaced
+  (then update the keys in `vendor/resources.js` to match).
+- **Edge Function input validation**: `city`/`kind` must be in whitelists mirroring `CITIES`/`KINDS`
+  (update both places together), `description` ≤ 5000, `place` ≤ 200, body ≤ 16 KB, protocol regex.
+  CORS only for `ALLOWED_ORIGINS` (env, defaults to the two vercel.app domains) plus localhost/file.
+  `supabase-schema.sql` mirrors the length limits as `CHECK`s and makes `protocol` unique.
+  Set `RATE_LIMIT_SALT` in Supabase secrets — the fallback salt is public in the repo.
 - **Denúncia anti-spam honeypot**: a visually-hidden (`clip:rect(0,0,0,0)`, off in the accessibility
   tree via `aria-hidden`) input bound to `state.hp`. If it's non-empty on submit, `submit()`
   pretends success (`sent: true`) without calling the Edge Function at all — don't "fix" this into
@@ -200,18 +221,26 @@ against the REST API. The Edge Function is what actually prevents that:
   scripting requests directly, which the honeypot alone does not stop.
 - `frame-ancestors` is **not** in the CSP `<meta>` tag — browsers ignore that directive when it
   arrives via `<meta>` rather than a real HTTP header (confirmed empirically: Edge printed exactly
-  that warning to console when it was there). `_headers` sets `X-Frame-Options: DENY` instead,
-  which works from a `<meta>`-equivalent file *only* on hosts that honor Netlify's `_headers`
-  convention. On GitHub Pages (no custom headers support at all) or Vercel (needs `vercel.json`
-  instead), clickjacking protection needs a different mechanism — don't assume `_headers` alone
-  covers every hosting choice.
+  that warning to console when it was there). It's set as a real header in `vercel.json` (+
+  `X-Frame-Options: DENY`).
+
+## SEO and discretion
+
+- `<head>` has title, description, canonical, Open Graph/Twitter, and JSON-LD (`WebSite` named
+  "Conecta Direitos" — Google's site-name signal — plus `WebPage`). All hardcode
+  `https://conectadireitos.vercel.app/`; if the site gets a custom domain, update canonical, og:*,
+  JSON-LD, `robots.txt`, `sitemap.xml`, and `ALLOWED_ORIGINS`.
+- **Visible text (tab title, hero) intentionally never says "LGBT"** so someone glancing at the
+  screen isn't outed. The term appears only in the meta description / JSON-LD / `<noscript>`.
+- A `<noscript>` block after `</x-dc>` gives a static summary for no-JS visitors and crawlers.
 
 ## Content and behavior constraints to preserve
 
 This is a safety-oriented resource for a vulnerable audience, and several behaviors are load-bearing
 promises made in the page copy itself — don't break them incidentally while editing:
 
-- **"Saída rápida" (quick exit)** buttons call `quickExit()`, which does
+- **"Saída rápida" (quick exit)** buttons — and the **Esc key** (document keydown listener added in
+  `componentDidMount`) — call `quickExit()`, which does
   `window.location.replace("https://www.google.com")` — an immediate, non-history-preserving
   navigation away from the page for user safety. Keep it instant and keep using `replace` (not
   `href`/`assign`) so the page doesn't stay in browser history.

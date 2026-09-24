@@ -3,32 +3,88 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Conecta Direitos</title>
+<!-- Título e textos visíveis na aba são discretos de propósito (sem "LGBT"):
+     quem está com a página aberta não deve ser exposto por quem olha a tela.
+     O termo fica só na descrição/dados estruturados, que aparecem no Google. -->
+<title>Conecta Direitos · Apoio e direitos na Serra da Ibiapaba (CE)</title>
+<meta name="description" content="Conecta Direitos: cartilha gratuita de direitos LGBTQIA+ na Serra da Ibiapaba (CE) — mapa de apoio, saúde, modelos de requerimento e denúncia anônima.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://conectadireitos.vercel.app/">
+<meta name="theme-color" content="#faf7f2">
+<meta name="color-scheme" content="light">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Conecta Direitos">
+<meta property="og:title" content="Conecta Direitos · Apoio e direitos na Serra da Ibiapaba">
+<meta property="og:description" content="Onde buscar apoio, quais são os seus direitos e como denunciar sem se expor. Tianguá, Viçosa do Ceará, Ubajara, São Benedito, Ibiapina, Guaraciaba do Norte, Carnaubal, Croatá e Ipu.">
+<meta property="og:url" content="https://conectadireitos.vercel.app/">
+<meta property="og:image" content="https://conectadireitos.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Conecta Direitos — cartilha digital da Serra da Ibiapaba, Ceará">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="./favicon.ico">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<!-- script-src precisa de 'unsafe-eval': support.js executa a lógica deste
+<link rel="manifest" href="./site.webmanifest">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://conectadireitos.vercel.app/#website",
+      "name": "Conecta Direitos",
+      "alternateName": ["Conecta Direitos Ibiapaba", "Cartilha Conecta Direitos"],
+      "url": "https://conectadireitos.vercel.app/",
+      "inLanguage": "pt-BR"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://conectadireitos.vercel.app/#webpage",
+      "url": "https://conectadireitos.vercel.app/",
+      "name": "Conecta Direitos · Apoio e direitos na Serra da Ibiapaba (CE)",
+      "description": "Cartilha digital gratuita de direitos, saúde, rede de apoio e denúncia anônima para a população LGBTQIA+ dos 9 municípios da Serra da Ibiapaba, Ceará.",
+      "inLanguage": "pt-BR",
+      "isPartOf": { "@id": "https://conectadireitos.vercel.app/#website" },
+      "keywords": "Conecta Direitos, LGBTQIA+, direitos, nome social, denúncia anônima, Serra da Ibiapaba, Ceará, Tianguá, Viçosa do Ceará, Ubajara, São Benedito, Ibiapina, Guaraciaba do Norte, Carnaubal, Croatá, Ipu",
+      "audience": { "@type": "Audience", "audienceType": "População LGBTQIA+ e servidores públicos" },
+      "spatialCoverage": { "@type": "Place", "name": "Serra da Ibiapaba, Ceará, Brasil" }
+    }
+  ]
+}
+</script>
+<!-- Tudo (React, Leaflet, ícones, fontes) é servido do próprio site, em
+     vendor/ — nada de unpkg.com nem Google Fonts. Motivos: se o CDN cair o
+     site não fica em branco, e o IP de quem acessa (público vulnerável) não
+     vai para terceiros. Única origem externa que sobra é a dos tiles do
+     OpenStreetMap (mapa) e o Supabase (denúncia).
+     script-src precisa de 'unsafe-eval': support.js executa a lógica deste
      componente via new Function(...) — é assim que o dc-runtime interpreta
      o bloco de script marcado data-dc-script mais abaixo no arquivo. Sem
      'unsafe-eval' o site inteiro (mapa, filtros, formulário) para de
      funcionar. connect-src aponta pro mesmo projeto Supabase de SUPABASE_URL
-     lá embaixo — se trocar um, troque o outro também.
+     lá embaixo — se trocar um, troque o outro também (e no vercel.json).
      frame-ancestors NÃO vai aqui de propósito: navegadores ignoram essa
-     diretiva quando entregue via <meta> (confirmado testando — aparece um
-     aviso no console). Proteção contra clickjacking de verdade precisa vir
-     de um header HTTP do host (ver _headers, se você usar Netlify). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://unpkg.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' https://sovnstjtiulvzdblmxts.supabase.co">
+     diretiva quando entregue via <meta>. Ela vem como header HTTP real do
+     vercel.json (a Vercel ignora o arquivo _headers, que é da Netlify). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' https://sovnstjtiulvzdblmxts.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<link rel="preload" href="./vendor/react/react.production.min.js" as="script">
+<link rel="preload" href="./vendor/react/react-dom.production.min.js" as="script">
+<link rel="preload" href="./vendor/fonts/Karla-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./vendor/fonts/Newsreader-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./vendor/phosphor/Phosphor-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<script src="./vendor/resources.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;0,700;1,500&family=Karla:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" integrity="sha384-nblAP2mo2pVPyMQZDw9Xy9Cwgs9lowushAYep4w5+Q9kF4Ibf3n0B/gCMVdR+Vqy" crossorigin="anonymous" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="./vendor/fonts/fonts.css" />
+<link rel="stylesheet" href="./vendor/phosphor/style.css" />
+<link rel="stylesheet" href="./vendor/leaflet/leaflet.css" />
+<script src="./vendor/leaflet/leaflet.js"></script>
 <style>
   :root {
     --ink: oklch(0.22 0.015 55);
@@ -45,83 +101,102 @@
   a:hover { text-decoration: underline; }
   * { box-sizing: border-box; }
   .ph-bold { font-size: 22px; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  section[id] { scroll-margin-top: 120px; }
   .leaflet-container { font-family: Karla, system-ui, sans-serif; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offset: 0; }
+  .skip-link { position: absolute; left: 12px; top: -60px; z-index: 100; background: var(--ink); color: var(--paper-raised); padding: 10px 14px; border-radius: 7px; font-weight: 600; }
+  .skip-link:focus { top: 12px; text-decoration: none; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   @keyframes sc-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  }
 </style>
 </helmet>
 <div style="min-height:100vh;background:oklch(0.985 0.012 75);color:oklch(0.24 0.02 60)">
+  <a href="#conteudo" class="skip-link">Pular para o conteúdo</a>
 
-  <header style="position:sticky;top:0;z-index:50;background:oklch(0.985 0.012 75 / 0.94);backdrop-filter:blur(10px);border-bottom:1px solid oklch(0.9 0.02 70)">
+  <header style="position:sticky;top:0;z-index:50;background:oklch(0.985 0.012 75 / 0.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid oklch(0.9 0.02 70)">
     <div style="max-width:1000px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;row-gap:10px;align-items:center;gap:16px;justify-content:space-between">
-      <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 auto">
-        <div style="width:34px;height:34px;border-radius:11px;background:oklch(0.88 0.07 40);display:flex;align-items:center;justify-content:center;flex:none;color:oklch(0.32 0.08 35)"><i class="ph-bold ph-handshake"></i></div>
-        <div style="min-width:0">
-          <div style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:16px;letter-spacing:-0.01em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Conecta Direitos</div>
-          <div style="font-size:11.5px;color:oklch(0.5 0.02 60);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Serra da Ibiapaba · Ceará</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0">
-        <label style="display:flex;align-items:center;gap:7px;background:oklch(0.99 0.008 75);border:1px solid oklch(0.89 0.02 65);border-radius:999px;padding:7px 12px 7px 14px;min-width:0">
-          <span style="color:oklch(0.5 0.03 50);display:flex;flex:none"><i class="ph-bold ph-map-pin" style="font-size:15px"></i></span>
+      <a href="#conteudo" aria-label="Conecta Direitos — início" style="display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 auto;color:inherit;text-decoration:none">
+        <span aria-hidden="true" style="width:34px;height:34px;border-radius:11px;background:oklch(0.88 0.07 40);display:flex;align-items:center;justify-content:center;flex:none;color:oklch(0.32 0.08 35)"><i class="ph-bold ph-handshake" aria-hidden="true"></i></span>
+        <span style="min-width:0;display:block">
+          <span style="display:block;font-family:Newsreader,Georgia,serif;font-weight:700;font-size:16px;letter-spacing:-0.01em;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Conecta Direitos</span>
+          <span style="display:block;font-size:11.5px;color:oklch(0.5 0.02 60);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Serra da Ibiapaba · Ceará</span>
+        </span>
+      </a>
+      <div style="display:flex;align-items:center;gap:clamp(8px,2.5vw,10px);flex-wrap:nowrap;min-width:0;max-width:100%">
+        <label style="display:flex;align-items:center;gap:7px;background:oklch(0.99 0.008 75);border:1px solid oklch(0.89 0.02 65);border-radius:999px;padding:7px 12px 7px 14px;min-width:0;flex:0 1 auto">
+          <span style="color:oklch(0.5 0.03 50);display:flex;flex:none" aria-hidden="true"><i class="ph-bold ph-map-pin" style="font-size:15px" aria-hidden="true"></i></span>
+          <span class="sr-only">Município</span>
           <select value="{{ city }}" onChange="{{ onCity }}" style="appearance:none;border:none;background:none;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;color:oklch(0.3 0.03 45);cursor:pointer;outline:none;max-width:min(140px,38vw);min-width:0;width:100%">
             <sc-for list="{{ cityNames }}" as="c" hint-placeholder-count="6">
               <option value="{{ c }}">{{ c }}</option>
             </sc-for>
           </select>
         </label>
-        <button type="button" onClick="{{ quickExit }}" style="display:flex;align-items:center;gap:7px;flex:none;background:var(--ink);color:var(--paper-raised);border:none;border-radius:7px;padding:10px clamp(12px,4vw,16px);font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:oklch(0.32 0.02 55)">
-          <i class="ph-bold ph-sign-out" style="font-size:16px"></i>Saída rápida
+        <button type="button" onClick="{{ quickExit }}" title="Sair imediatamente para um site neutro (atalho: tecla Esc)" aria-keyshortcuts="Escape" style="display:flex;align-items:center;gap:7px;flex:none;background:var(--ink);color:var(--paper-raised);border:none;border-radius:7px;padding:10px clamp(12px,4vw,16px);font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:oklch(0.32 0.02 55)">
+          <i class="ph-bold ph-sign-out" style="font-size:16px" aria-hidden="true"></i>Saída rápida
         </button>
       </div>
     </div>
   </header>
 
+  <main id="conteudo" tabIndex="-1" style="outline:none">
   <section style="max-width:1000px;margin:0 auto;padding:clamp(32px,10vw,48px) 20px 8px">
     <p style="display:flex;align-items:center;gap:10px;margin:0 0 20px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint)"><span style="width:20px;height:1px;background:var(--line)"></span>Cartilha digital · 9 municípios da Ibiapaba</p>
     <h1 style="font-family:Newsreader,Georgia,serif;font-weight:600;font-style:italic;font-size:clamp(32px,7vw,50px);line-height:1.08;letter-spacing:-0.015em;margin:0 0 18px;max-width:19ch;text-wrap:pretty;color:var(--ink)">Orientação, cidadania e respeito na prática pública.</h1>
     <p style="font-size:17px;line-height:1.6;color:var(--ink-soft);max-width:52ch;margin:0 0 30px;text-wrap:pretty">Onde buscar apoio, quais são os seus direitos e como denunciar sem se expor. Escolha o seu município no topo da página: mapa, telefones e endereços mudam junto.</p>
     <div style="display:flex;flex-wrap:wrap;gap:10px">
-      <a href="#mapa" style="display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper-raised);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">Pontos de apoio em {{ city }}<i class="ph-bold ph-arrow-down" style="font-size:16px"></i></a>
+      <a href="#mapa" style="display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper-raised);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">Pontos de apoio em {{ city }}<i class="ph-bold ph-arrow-down" style="font-size:16px" aria-hidden="true"></i></a>
       <a href="#trilhas" style="display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">O que fazer agora</a>
       <a href="#denuncia" style="display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">Denúncia anônima</a>
     </div>
     <div style="display:flex;align-items:flex-start;gap:10px;margin-top:30px;padding:14px 16px;border-radius:8px;border-left:2px solid var(--accent);background:var(--paper-raised);font-size:13.5px;line-height:1.5;color:var(--ink-soft);max-width:56ch">
-      <span style="color:var(--accent);flex:none;margin-top:1px"><i class="ph-bold ph-shield-check" style="font-size:18px"></i></span>
-      <span>O botão <strong style="font-weight:600;color:var(--ink)">Saída rápida</strong> fecha esta página imediatamente e leva você a um site neutro. Nada do que você digita aqui é salvo no seu aparelho.</span>
+      <span style="color:var(--accent);flex:none;margin-top:1px"><i class="ph-bold ph-shield-check" style="font-size:18px" aria-hidden="true"></i></span>
+      <span>O botão <strong style="font-weight:600;color:var(--ink)">Saída rápida</strong> (ou a tecla <strong style="font-weight:600;color:var(--ink)">Esc</strong>) fecha esta página imediatamente e leva você a um site neutro. Nada do que você digita aqui é salvo no seu aparelho.</span>
     </div>
   </section>
 
   <section id="mapa" style="max-width:1000px;margin:0 auto;padding:clamp(36px,9vw,56px) 20px 0">
-    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Mapa de acolhimento · {{ city }}</h2>
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 8px">Mapa de acolhimento · {{ city }}</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 20px;max-width:52ch">Serviços e espaços do município com atendimento respeitoso. Toque em um filtro para ver os pontos.</p>
 
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
       <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
-        <button type="button" onClick="{{ f.onClick }}" style="{{ f.style }}" style-hover="filter:brightness(0.97)">
-          <i class="ph-bold ph-{{ f.icon }}" style="font-size:16px"></i>{{ f.label }}
+        <button type="button" onClick="{{ f.onClick }}" aria-pressed="{{ f.active }}" style="{{ f.style }}" style-hover="filter:brightness(0.97)">
+          <i class="ph-bold ph-{{ f.icon }}" style="font-size:16px" aria-hidden="true"></i>{{ f.label }}
         </button>
       </sc-for>
     </div>
 
     <div style="border-radius:20px;overflow:hidden;border:1px solid oklch(0.9 0.02 70)">
-      <div id="leaflet-map" style="height:clamp(230px,58vw,340px);position:relative;z-index:0;background:oklch(0.96 0.02 130)"></div>
+      <div id="leaflet-map" role="region" aria-label="{{ mapLabel }}" style="height:clamp(230px,58vw,340px);position:relative;z-index:0;background:oklch(0.96 0.02 130)"></div>
       <div style="border-top:1px solid oklch(0.91 0.02 70);background:oklch(0.99 0.008 75);padding:16px 18px">
         <sc-if value="{{ hasConfirmedPins }}" hint-placeholder-val="{{ true }}">
           <div style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.02 60);margin-bottom:12px">{{ listTitle }}</div>
           <div style="display:grid;gap:10px">
             <sc-for list="{{ visiblePins }}" as="p" hint-placeholder-count="3">
               <div style="display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border-radius:12px;background:oklch(0.97 0.014 75);border:1px solid oklch(0.93 0.02 70)">
-                <span style="{{ p.dotStyle }}"><i class="ph-bold ph-{{ p.icon }}" style="font-size:16px"></i></span>
+                <span style="{{ p.dotStyle }}"><i class="ph-bold ph-{{ p.icon }}" style="font-size:16px" aria-hidden="true"></i></span>
                 <div style="min-width:0">
                   <div style="font-family:Newsreader,Georgia,serif;font-weight:600;font-size:15px;margin-bottom:3px">{{ p.name }}</div>
-                  <div style="font-size:13.5px;line-height:1.5;color:oklch(0.46 0.02 60);margin-bottom:8px">{{ p.detail }}</div>
+                  <div style="font-size:13.5px;line-height:1.5;color:oklch(0.46 0.02 60);margin-bottom:8px;overflow-wrap:anywhere">{{ p.detail }}</div>
                   <sc-if value="{{ p.hasPhone }}" hint-placeholder-val="{{ true }}">
                     <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:oklch(0.42 0.02 60)">
-                      <span style="display:flex;align-items:center;gap:5px"><i class="ph-bold ph-phone" style="font-size:13px"></i>{{ p.phone }}</span>
+                      <sc-if value="{{ p.tel }}" hint-placeholder-val="{{ true }}">
+                        <a href="{{ p.tel }}" style="display:flex;align-items:center;gap:5px;color:var(--accent);font-weight:600;min-height:24px"><i class="ph-bold ph-phone" style="font-size:13px" aria-hidden="true"></i>{{ p.phone }}</a>
+                      </sc-if>
+                      <sc-if value="{{ !p.tel }}" hint-placeholder-val="{{ false }}">
+                        <span style="display:flex;align-items:center;gap:5px"><i class="ph-bold ph-phone" style="font-size:13px" aria-hidden="true"></i>{{ p.phone }}</span>
+                      </sc-if>
                     </div>
                   </sc-if>
                   <sc-if value="{{ p.approx }}" hint-placeholder-val="{{ false }}">
-                    <div style="display:flex;align-items:center;gap:5px;margin-top:6px;font-size:11.5px;color:oklch(0.5 0.1 60)"><i class="ph-bold ph-warning-circle" style="font-size:12px"></i>Localização aproximada no mapa (centro do município) — confirme o endereço por telefone</div>
+                    <div style="display:flex;align-items:center;gap:5px;margin-top:6px;font-size:11.5px;color:oklch(0.5 0.1 60)"><i class="ph-bold ph-warning-circle" style="font-size:12px" aria-hidden="true"></i>Localização aproximada no mapa (centro do município) — confirme o endereço por telefone</div>
                   </sc-if>
                 </div>
               </div>
@@ -131,7 +206,7 @@
         </sc-if>
         <sc-if value="{{ !hasConfirmedPins }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex;align-items:flex-start;gap:10px;padding:4px 2px">
-            <span style="color:oklch(0.5 0.08 60);flex:none;margin-top:1px"><i class="ph-bold ph-info" style="font-size:18px"></i></span>
+            <span style="color:oklch(0.5 0.08 60);flex:none;margin-top:1px"><i class="ph-bold ph-info" style="font-size:18px" aria-hidden="true"></i></span>
             <p style="margin:0;font-size:14px;line-height:1.6;color:oklch(0.4 0.03 60)">Ainda estamos confirmando os pontos de apoio de <strong>{{ city }}</strong> com endereço e telefone oficiais. Enquanto isso, use os telefones gratuitos abaixo — valem para todo o estado.</p>
           </div>
         </sc-if>
@@ -140,19 +215,19 @@
 
     <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px">
       <div style="background:var(--paper-raised);border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:10px;padding:18px">
-        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-phone-call" style="font-size:15px;color:var(--accent)"></i>Vale para toda a região</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-phone-call" style="font-size:15px;color:var(--accent)" aria-hidden="true"></i>Vale para toda a região</div>
         <div style="display:grid;gap:9px">
           <sc-for list="{{ stateContacts }}" as="c" hint-placeholder-count="4">
             <div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline;font-size:14px">
               <span style="color:var(--ink-soft)">{{ c.name }}</span>
-              <strong style="font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:500;color:var(--ink);white-space:nowrap">{{ c.number }}</strong>
+              <a href="{{ c.tel }}" aria-label="{{ c.ariaLabel }}" style="font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:500;color:var(--ink);white-space:nowrap;padding:2px 0">{{ c.number }}</a>
             </div>
           </sc-for>
         </div>
         <p style="font-size:12px;color:var(--ink-faint);margin:12px 0 0;line-height:1.5">Ligações gratuitas e sigilosas, 24 horas.</p>
       </div>
       <div style="background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:18px">
-        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-buildings" style="font-size:15px"></i>Ficha do município</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-buildings" style="font-size:15px" aria-hidden="true"></i>Ficha do município</div>
         <div style="display:grid;gap:9px;font-size:14px;color:var(--ink-soft)">
           <sc-for list="{{ cityFacts }}" as="f" hint-placeholder-count="4">
             <div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">
@@ -166,15 +241,15 @@
   </section>
 
   <section id="trilhas" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
-    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">O que fazer agora</h2>
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 8px">O que fazer agora</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 20px;max-width:52ch">Escolha a situação mais parecida com a sua. Cada trilha diz o que levar, para onde ir e em que ordem.</p>
     <div style="display:grid;gap:10px">
       <sc-for list="{{ trails }}" as="t" hint-placeholder-count="4">
         <div style="{{ t.wrapStyle }}">
-          <button type="button" onClick="{{ t.toggle }}" style="width:100%;display:flex;align-items:center;gap:13px;background:none;border:none;padding:18px 20px;cursor:pointer;text-align:left;font-family:Karla,sans-serif">
-            <span style="{{ t.iconStyle }}"><i class="ph-bold ph-{{ t.icon }}" style="font-size:19px"></i></span>
+          <button type="button" onClick="{{ t.toggle }}" aria-expanded="{{ t.open }}" style="width:100%;display:flex;align-items:center;gap:13px;background:none;border:none;padding:18px 20px;cursor:pointer;text-align:left;font-family:Karla,sans-serif">
+            <span style="{{ t.iconStyle }}"><i class="ph-bold ph-{{ t.icon }}" style="font-size:19px" aria-hidden="true"></i></span>
             <span style="flex:1;font-family:Newsreader,Georgia,serif;font-weight:600;font-size:16.5px;color:oklch(0.24 0.02 60);letter-spacing:-0.01em">{{ t.title }}</span>
-            <span style="{{ t.chevronStyle }}"><i class="ph-bold ph-caret-down" style="font-size:18px"></i></span>
+            <span style="{{ t.chevronStyle }}"><i class="ph-bold ph-caret-down" style="font-size:18px" aria-hidden="true"></i></span>
           </button>
           <sc-if value="{{ t.open }}" hint-placeholder-val="{{ false }}">
             <div style="padding:0 20px 22px 20px">
@@ -188,7 +263,7 @@
                 </sc-for>
               </div>
               <div style="background:oklch(0.97 0.02 90);border:1px solid oklch(0.92 0.025 85);border-radius:13px;padding:14px 16px">
-                <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.44 0.05 60);margin-bottom:8px"><i class="ph-bold ph-briefcase" style="font-size:14px"></i>Leve com você</div>
+                <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.44 0.05 60);margin-bottom:8px"><i class="ph-bold ph-briefcase" style="font-size:14px" aria-hidden="true"></i>Leve com você</div>
                 <p style="margin:0;font-size:14px;line-height:1.6;color:oklch(0.36 0.02 60)">{{ t.bring }}</p>
               </div>
             </div>
@@ -199,16 +274,16 @@
   </section>
 
   <section style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
-    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Direitos legais e proteção</h2>
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 8px">Direitos legais e proteção</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">O que a lei garante e como acionar cada direito no serviço público.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px">
       <sc-for list="{{ rightsCards }}" as="c" hint-placeholder-count="4">
         <article style="{{ c.style }}">
-          <span style="{{ c.iconStyle }}"><i class="ph-bold ph-{{ c.icon }}"></i></span>
+          <span style="{{ c.iconStyle }}"><i class="ph-bold ph-{{ c.icon }}" aria-hidden="true"></i></span>
           <h3 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:17.5px;letter-spacing:-0.01em;margin:14px 0 8px;line-height:1.25">{{ c.title }}</h3>
           <p style="font-size:14.5px;line-height:1.6;color:oklch(0.4 0.02 60);margin:0 0 12px;text-wrap:pretty">{{ c.text }}</p>
           <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:oklch(0.42 0.05 40);padding-top:12px;border-top:1px solid oklch(0.91 0.02 70)">
-            <i class="ph-bold ph-map-pin" style="font-size:14px"></i>{{ c.where }}
+            <i class="ph-bold ph-map-pin" style="font-size:14px" aria-hidden="true"></i>{{ c.where }}
           </div>
         </article>
       </sc-for>
@@ -216,16 +291,16 @@
   </section>
 
   <section style="max-width:1000px;margin:0 auto;padding:clamp(32px,9vw,48px) 20px 0">
-    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Saúde e bem-estar</h2>
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 8px">Saúde e bem-estar</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">Atendimento humanizado é direito, não favor. Use estes caminhos.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px">
       <sc-for list="{{ healthCards }}" as="c" hint-placeholder-count="4">
         <article style="{{ c.style }}">
-          <span style="{{ c.iconStyle }}"><i class="ph-bold ph-{{ c.icon }}"></i></span>
+          <span style="{{ c.iconStyle }}"><i class="ph-bold ph-{{ c.icon }}" aria-hidden="true"></i></span>
           <h3 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:17.5px;letter-spacing:-0.01em;margin:14px 0 8px;line-height:1.25">{{ c.title }}</h3>
           <p style="font-size:14.5px;line-height:1.6;color:oklch(0.4 0.02 60);margin:0 0 12px;text-wrap:pretty">{{ c.text }}</p>
           <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:oklch(0.42 0.05 40);padding-top:12px;border-top:1px solid oklch(0.91 0.02 70)">
-            <i class="ph-bold ph-phone" style="font-size:14px"></i>{{ c.where }}
+            <i class="ph-bold ph-phone" style="font-size:14px" aria-hidden="true"></i>{{ c.where }}
           </div>
         </article>
       </sc-for>
@@ -233,18 +308,18 @@
   </section>
 
   <section id="modelos" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
-    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Modelos prontos</h2>
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 8px">Modelos prontos</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:54ch">Textos para copiar, preencher e entregar. Onde aparece [entre colchetes], troque pelos seus dados.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px">
       <sc-for list="{{ templates }}" as="t" hint-placeholder-count="3">
         <article style="background:oklch(0.995 0.005 75);border:1px solid oklch(0.92 0.02 70);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="{{ t.iconStyle }}"><i class="ph-bold ph-{{ t.icon }}" style="font-size:18px"></i></span>
+            <span style="{{ t.iconStyle }}"><i class="ph-bold ph-{{ t.icon }}" style="font-size:18px" aria-hidden="true"></i></span>
             <h3 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:16.5px;letter-spacing:-0.01em;margin:0;line-height:1.25">{{ t.title }}</h3>
           </div>
           <p style="margin:0;font-size:13.5px;line-height:1.55;color:oklch(0.48 0.02 60)">{{ t.purpose }}</p>
           <pre style="margin:0;background:oklch(0.97 0.014 75);border:1px solid oklch(0.93 0.02 70);border-radius:12px;padding:14px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.65;color:oklch(0.3 0.02 60);white-space:pre-wrap">{{ t.body }}</pre>
-          <button type="button" onClick="{{ t.copy }}" style="{{ t.btnStyle }}"><i class="ph-bold ph-{{ t.btnIcon }}" style="font-size:15px"></i>{{ t.btnLabel }}</button>
+          <button type="button" onClick="{{ t.copy }}" style="{{ t.btnStyle }}"><i class="ph-bold ph-{{ t.btnIcon }}" style="font-size:15px" aria-hidden="true"></i>{{ t.btnLabel }}</button>
         </article>
       </sc-for>
     </div>
@@ -253,14 +328,14 @@
   <section id="servidores" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
     <div style="border-radius:12px;background:var(--paper-raised);border:1px solid var(--line);border-top:2px solid var(--accent);padding:clamp(22px,4vw,34px)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;color:var(--accent)">
-        <i class="ph-bold ph-briefcase"></i>
+        <i class="ph-bold ph-briefcase" aria-hidden="true"></i>
         <span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Para quem atende</span>
       </div>
-      <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 10px;color:var(--ink)">Servidores públicos e equipes de atendimento</h2>
+      <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 10px;color:var(--ink)">Servidores públicos e equipes de atendimento</h2>
       <p style="font-size:15.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 22px;max-width:56ch">A cartilha também é para recepção, enfermagem, escola, assistência social e guarda municipal. Duas listas curtas para consultar antes do atendimento.</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px">
         <div style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.4 0.07 155);margin-bottom:14px"><i class="ph-bold ph-check" style="font-size:15px"></i>Faça</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.4 0.07 155);margin-bottom:14px"><i class="ph-bold ph-check" style="font-size:15px" aria-hidden="true"></i>Faça</div>
           <ul style="margin:0;padding:0;list-style:none;display:grid;gap:11px">
             <sc-for list="{{ dos }}" as="d" hint-placeholder-count="5">
               <li style="display:flex;gap:10px;font-size:14.5px;line-height:1.55;color:var(--ink)">
@@ -270,7 +345,7 @@
           </ul>
         </div>
         <div style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.45 0.09 25);margin-bottom:14px"><i class="ph-bold ph-x" style="font-size:15px"></i>Evite</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.45 0.09 25);margin-bottom:14px"><i class="ph-bold ph-x" style="font-size:15px" aria-hidden="true"></i>Evite</div>
           <ul style="margin:0;padding:0;list-style:none;display:grid;gap:11px">
             <sc-for list="{{ donts }}" as="d" hint-placeholder-count="5">
               <li style="display:flex;gap:10px;font-size:14.5px;line-height:1.55;color:var(--ink)">
@@ -284,7 +359,7 @@
   </section>
 
   <section id="glossario" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 0">
-    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 8px">Glossário</h2>
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 8px">Glossário</h2>
     <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 22px;max-width:52ch">Termos e siglas que aparecem no atendimento, em linguagem simples.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px">
       <sc-for list="{{ glossary }}" as="g" hint-placeholder-count="9">
@@ -299,15 +374,15 @@
   <section id="denuncia" style="max-width:1000px;margin:0 auto;padding:clamp(38px,9vw,60px) 20px 56px">
     <div style="border-radius:12px;background:var(--paper-raised);border:1px solid var(--line);border-top:2px solid var(--accent);padding:clamp(22px,4vw,38px)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--accent)">
-        <i class="ph-bold ph-lock"></i>
+        <i class="ph-bold ph-lock" aria-hidden="true"></i>
         <span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Canal anônimo</span>
       </div>
-      <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:26px;letter-spacing:-0.02em;margin:0 0 10px;color:var(--ink)">Registrar uma denúncia</h2>
-      <p style="font-size:15.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 24px;max-width:56ch;text-wrap:pretty">Não pedimos nome, e-mail ou telefone. Nenhum endereço de IP é registrado e o formulário não usa cookies de rastreamento. Um único passo: escreva e envie.</p>
+      <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 10px;color:var(--ink)">Registrar uma denúncia</h2>
+      <p style="font-size:15.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 24px;max-width:56ch;text-wrap:pretty">Não pedimos nome, e-mail ou telefone. A denúncia é gravada sem endereço de IP e o formulário não usa cookies de rastreamento. Um único passo: escreva e envie.</p>
 
       <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
-        <div style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:26px">
-          <span style="display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:9px;background:oklch(0.9 0.05 150);color:oklch(0.35 0.07 150)"><i class="ph-bold ph-check"></i></span>
+        <div role="status" style="background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:26px">
+          <span style="display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:9px;background:oklch(0.9 0.05 150);color:oklch(0.35 0.07 150)"><i class="ph-bold ph-check" aria-hidden="true"></i></span>
           <h3 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:19px;margin:14px 0 8px;color:var(--ink)">Denúncia registrada</h3>
           <p style="font-size:14.5px;line-height:1.6;color:var(--ink-soft);margin:0 0 6px;max-width:52ch">Seu relato foi enviado sem qualquer identificação. Guarde o protocolo abaixo se quiser acompanhar em um posto de atendimento.</p>
           <p style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:18px;font-weight:500;letter-spacing:0.04em;margin:10px 0 18px;color:var(--accent)">{{ protocol }}</p>
@@ -327,7 +402,7 @@
           </label>
           <label style="display:grid;gap:7px">
             <span style="font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Tipo de ocorrência</span>
-            <select value="{{ kind }}" onChange="{{ onKind }}" style="appearance:none;width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60);cursor:pointer">
+            <select value="{{ kind }}" onChange="{{ onKind }}" required="required" aria-required="true" style="appearance:none;width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60);cursor:pointer">
               <option value="">Selecione uma opção</option>
               <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="5">
                 <option value="{{ k }}">{{ k }}</option>
@@ -335,43 +410,72 @@
             </select>
           </label>
           <label style="display:grid;gap:7px">
-            <span style="font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Descrição</span>
-            <textarea value="{{ desc }}" onChange="{{ onDesc }}" rows="5" placeholder="Conte o que aconteceu com suas palavras. Não é preciso citar seu nome." style="width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;line-height:1.55;color:oklch(0.24 0.02 60);resize:vertical"></textarea>
+            <span style="display:flex;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Descrição<span style="font-weight:400;font-size:12px;color:oklch(0.55 0.02 60)" aria-live="polite">{{ descCount }}</span></span>
+            <textarea value="{{ desc }}" onChange="{{ onDesc }}" rows="5" maxLength="5000" required="required" aria-required="true" placeholder="Conte o que aconteceu com suas palavras. Não é preciso citar seu nome." style="width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;line-height:1.55;color:oklch(0.24 0.02 60);resize:vertical"></textarea>
           </label>
           <label style="display:grid;gap:7px">
             <span style="font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Local e data <span style="font-weight:400;color:oklch(0.55 0.02 60)">(opcional)</span></span>
-            <input value="{{ place }}" onChange="{{ onPlace }}" placeholder="Ex.: posto de saúde do centro, 12/03" style="width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60)" />
+            <input value="{{ place }}" onChange="{{ onPlace }}" maxLength="200" autoComplete="off" placeholder="Ex.: posto de saúde do centro, 12/03" style="width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60)" />
           </label>
           <label style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap" aria-hidden="true">
             Não preencha este campo
-            <input value="{{ hp }}" onChange="{{ onHp }}" tabindex="-1" autocomplete="off" />
+            <input value="{{ hp }}" onChange="{{ onHp }}" tabIndex="-1" autoComplete="off" name="website" />
           </label>
           <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
-            <p style="display:flex;align-items:center;gap:7px;margin:0;font-size:13.5px;font-weight:600;color:oklch(0.5 0.14 30)"><i class="ph-bold ph-warning-circle" style="font-size:15px"></i>{{ sendError }}</p>
+            <p role="alert" style="display:flex;align-items:center;gap:7px;margin:0;font-size:13.5px;font-weight:600;color:oklch(0.5 0.14 30)"><i class="ph-bold ph-warning-circle" style="font-size:15px" aria-hidden="true"></i>{{ sendError }}</p>
           </sc-if>
           <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px">
             <button type="button" onClick="{{ submit }}" style="{{ submitStyle }}">
-              <i class="ph-bold ph-{{ submitIcon }}" style="{{ submitIconStyle }}"></i>{{ submitLabel }}
+              <i class="ph-bold ph-{{ submitIcon }}" style="{{ submitIconStyle }}" aria-hidden="true"></i>{{ submitLabel }}
             </button>
-            <span style="font-size:12.5px;color:oklch(0.52 0.02 60);display:flex;align-items:center;gap:6px"><i class="ph-bold ph-eye-slash" style="font-size:14px"></i>Sem IP, sem login, sem histórico</span>
+            <span style="font-size:12.5px;color:oklch(0.52 0.02 60);display:flex;align-items:center;gap:6px"><i class="ph-bold ph-eye-slash" style="font-size:14px" aria-hidden="true"></i>Sem IP, sem login, sem histórico</span>
           </div>
           <p style="font-size:13px;line-height:1.55;color:oklch(0.5 0.02 60);margin:0;max-width:56ch">Em caso de risco imediato, ligue 190. Para orientação sobre violência e discriminação, ligue 100 (Direitos Humanos) — ambos gratuitos e sigilosos.</p>
         </div>
       </sc-if>
     </div>
   </section>
+  </main>
 
   <footer style="border-top:1px solid oklch(0.91 0.02 70);background:oklch(0.97 0.014 75)">
     <div style="max-width:1000px;margin:0 auto;padding:30px 20px 40px;display:flex;flex-wrap:wrap;gap:18px;justify-content:space-between;align-items:flex-end">
       <div>
         <div style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:15px;margin-bottom:5px">Conecta Direitos</div>
         <p style="font-size:13px;line-height:1.6;color:oklch(0.5 0.02 60);margin:0;max-width:46ch">Cartilha digital de orientação, cidadania e respeito na prática pública. Municípios da Serra da Ibiapaba, Ceará.</p>
+        <p style="font-size:12px;line-height:1.6;color:var(--ink-faint);margin:10px 0 0;max-width:60ch">Tianguá · Viçosa do Ceará · Ubajara · São Benedito · Ibiapina · Guaraciaba do Norte · Carnaubal · Croatá · Ipu</p>
+        <p style="font-size:12px;line-height:1.6;color:var(--ink-faint);margin:6px 0 0;max-width:60ch">Endereços e telefones: Secretarias municipais, SSPDS-CE e Diários Oficiais (ago/2026). Mapa © colaboradores do OpenStreetMap.</p>
       </div>
-      <button type="button" onClick="{{ quickExit }}" style="display:flex;align-items:center;gap:7px;background:none;border:1px solid var(--line);border-radius:7px;padding:10px 16px;font-family:Karla,sans-serif;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer"><i class="ph-bold ph-sign-out" style="font-size:15px"></i>Saída rápida</button>
+      <button type="button" onClick="{{ quickExit }}" style="display:flex;align-items:center;gap:7px;background:none;border:1px solid var(--line);border-radius:7px;padding:10px 16px;font-family:Karla,sans-serif;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer"><i class="ph-bold ph-sign-out" style="font-size:15px" aria-hidden="true"></i>Saída rápida</button>
     </div>
   </footer>
 </div>
 </x-dc>
+<noscript>
+  <!-- Versão estática mínima: para quem navega sem JavaScript e para robôs
+       de busca que não executam JS. A página completa (mapa, filtros,
+       formulário) precisa de JavaScript. -->
+  <div style="max-width:720px;margin:0 auto;padding:32px 20px;font-family:Georgia,serif;line-height:1.6;color:#2b2622;background:#faf7f2">
+    <p><strong>Conecta Direitos</strong> · Serra da Ibiapaba · Ceará</p>
+    <h1>Orientação, cidadania e respeito na prática pública.</h1>
+    <p>Cartilha digital gratuita para a população LGBTQIA+ e para servidores públicos dos 9 municípios da Serra da Ibiapaba: Tianguá, Viçosa do Ceará, Ubajara, São Benedito, Ibiapina, Guaraciaba do Norte, Carnaubal, Croatá e Ipu. Onde buscar apoio, quais são os seus direitos e como denunciar sem se expor.</p>
+    <h2>Telefones gratuitos, 24 horas</h2>
+    <ul>
+      <li>Direitos Humanos: <a href="tel:100">100</a></li>
+      <li>Polícia Militar: <a href="tel:190">190</a></li>
+      <li>Ouvidoria do SUS: <a href="tel:136">136</a></li>
+      <li>Violência contra a mulher: <a href="tel:180">180</a></li>
+      <li>SAMU: <a href="tel:192">192</a></li>
+    </ul>
+    <h2>Seus direitos</h2>
+    <ul>
+      <li>Discriminação por orientação sexual ou identidade de gênero é crime, equiparado ao racismo.</li>
+      <li>Pessoas trans maiores de 18 anos retificam nome e gênero direto no cartório, sem laudo e sem cirurgia.</li>
+      <li>O nome social deve ser usado em escolas, hospitais e repartições públicas (Decreto nº 8.727/2016).</li>
+      <li>Atendimento humanizado no SUS, CAPS sem encaminhamento, testagem, PrEP e PEP gratuitos.</li>
+    </ul>
+    <p>Para ver o mapa de pontos de apoio de cada município e fazer uma denúncia anônima, ative o JavaScript do navegador.</p>
+  </div>
+</noscript>
 <script type="text/x-dc" data-dc-script data-props="{}">
 // Backend das denúncias anônimas (Supabase). Crie um projeto gratuito em
 // supabase.com, rode o SQL de supabase-schema.sql nele, e cole aqui a
@@ -623,6 +727,29 @@ const HEALTH = [
 
 const CARD = "background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:22px";
 
+const DESC_MAX = 5000;
+
+// "(88) 3671-2655" -> "tel:+558836712655". Só gera link quando o texto É um
+// telefone (DDD + número); "Plantão 24h", "Atendimento Presencial" etc. ficam
+// como texto puro, sem link falso.
+function telHref(phone) {
+  const m = /\((\d{2})\)\s*([\d\s-]{8,11})/.exec(phone || "");
+  if (!m) return "";
+  return "tel:+55" + m[1] + m[2].replace(/\D/g, "");
+}
+
+// Protocolo da denúncia: CD-XXXX-XXXX com gerador criptográfico (não
+// Math.random) e alfabeto sem caracteres ambíguos (0/O, 1/I/L). ~8,5×10¹¹
+// combinações — o formato antigo CD-###### (900 mil) começava a colidir por
+// volta de mil denúncias.
+function makeProtocol() {
+  const A = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+  const buf = new Uint32Array(8);
+  crypto.getRandomValues(buf);
+  const c = Array.from(buf, n => A[n % A.length]).join("");
+  return "CD-" + c.slice(0, 4) + "-" + c.slice(4);
+}
+
 class Component extends DCLogic {
   state = { city: "Tianguá", filter: "apoio", openTrail: 0, copied: -1, kind: "", desc: "", place: "", hp: "", sent: false, protocol: "", sending: false, sendError: "" };
 
@@ -632,12 +759,35 @@ class Component extends DCLogic {
   // re-hidratar <svg> depois de cada atualização/placeholder de streaming).
   componentDidMount() {
     this.initMap();
+    // O leaflet.js vem do <helmet> e pode terminar de carregar depois do
+    // primeiro render; nesse caso initMap() saiu cedo sem criar o mapa.
+    // Tenta de novo por alguns segundos em vez de deixar o mapa em branco.
+    if (!this._map) {
+      let tries = 0;
+      this._mapRetry = setInterval(() => {
+        this.initMap();
+        if (this._map || ++tries > 50) { clearInterval(this._mapRetry); this._mapRetry = null; }
+      }, 200);
+    }
+    // Saída rápida também pela tecla Esc — padrão em sites de apoio a
+    // vítimas, e mais rápido que achar o botão num momento de pânico.
+    this._onKey = e => { if (e.key === "Escape") this.quickExit(); };
+    document.addEventListener("keydown", this._onKey);
   }
   componentDidUpdate() {
+    if (!this._map) this.initMap();
     this.syncMap();
   }
   componentWillUnmount() {
+    if (this._mapRetry) clearInterval(this._mapRetry);
+    if (this._onKey) document.removeEventListener("keydown", this._onKey);
     if (this._map) { this._map.remove(); this._map = null; }
+  }
+
+  // location.replace (não href/assign): a página some do histórico, então o
+  // botão "voltar" não traz ninguém de volta pra cá.
+  quickExit() {
+    window.location.replace("https://www.google.com");
   }
 
   // --- Mapa real (Leaflet + OpenStreetMap) ---------------------------------
@@ -684,7 +834,10 @@ class Component extends DCLogic {
         iconAnchor: [15, 30],
         popupAnchor: [0, -30]
       });
-      const phoneLine = p.phone ? "<div style=\"font-size:11.5px;color:#333;margin-top:4px\">" + this.escapeHtml(p.phone) + "</div>" : "";
+      const tel = telHref(p.phone);
+      const phoneText = this.escapeHtml(p.phone);
+      const phoneLine = !p.phone ? "" : "<div style=\"font-size:11.5px;color:#333;margin-top:4px\">" +
+        (tel ? "<a href=\"" + this.escapeHtml(tel) + "\">" + phoneText + "</a>" : phoneText) + "</div>";
       const approxLine = p.approx ? "<div style=\"font-size:11px;color:#a15c00;margin-top:6px\">📍 Localização aproximada (centro do município) — confirme o endereço por telefone.</div>" : "";
       const html = "<div style=\"font-family:Karla,system-ui,sans-serif;max-width:220px\">" +
         "<div style=\"font-family:Newsreader,Georgia,serif;font-weight:700;font-size:13.5px;margin-bottom:4px\">" + this.escapeHtml(p.name) + "</div>" +
@@ -716,7 +869,9 @@ class Component extends DCLogic {
       body: JSON.stringify(payload)
     });
     if (res.status === 429) {
-      throw new Error("Muitos envios recentes deste dispositivo/rede. Aguarde um pouco e tente de novo.");
+      const e = new Error("rate_limited");
+      e.rateLimited = true;
+      throw e;
     }
     if (!res.ok) throw new Error("Falha ao enviar (HTTP " + res.status + ")");
   }
@@ -743,13 +898,14 @@ class Component extends DCLogic {
       { key: "apoio", label: "Redes de Apoio", icon: "users" },
       { key: "saude", label: "Saúde", icon: "stethoscope" },
       { key: "lazer", label: "Lazer Seguro", icon: "sun" }
-    ].map(f => ({ ...f, style: this.chip(filter === f.key, f.key), onClick: () => this.setState({ filter: f.key }) }));
+    ].map(f => ({ ...f, active: filter === f.key, style: this.chip(filter === f.key, f.key), onClick: () => this.setState({ filter: f.key }) }));
 
     const pins = data.pins.map(p => ({
       ...p,
       onClick: () => this.setState({ filter: p.cat }),
       dotStyle: this.iconBox(p.cat, 34),
-      hasPhone: !!p.phone
+      hasPhone: !!p.phone,
+      tel: telHref(p.phone)
     }));
 
     const decorate = c => ({ ...c, style: CARD, iconStyle: this.iconBox(c.tone) });
@@ -783,7 +939,8 @@ class Component extends DCLogic {
       // Ficha do município deriva direto dos pins reais (nunca inventa um
       // campo — ex.: "Coletivo local" — que o Guia_Oficial... não confirma).
       cityFacts: data.pins.map(p => ({ label: p.role, value: p.name })),
-      stateContacts: STATE_CONTACTS,
+      stateContacts: STATE_CONTACTS.map(c => ({ ...c, tel: "tel:" + c.number, ariaLabel: "Ligar para " + c.name + ", " + c.number })),
+      mapLabel: "Mapa de " + city + " com os pontos de " + filters.find(f => f.key === filter).label.toLowerCase(),
       filters, pins,
       hasConfirmedPins: data.pins.length > 0,
       visiblePins: pins.filter(p => p.cat === filter),
@@ -794,6 +951,7 @@ class Component extends DCLogic {
       kinds: KINDS,
       kind: this.state.kind, desc: this.state.desc, place: this.state.place, hp: this.state.hp,
       onKind: set("kind"), onDesc: set("desc"), onPlace: set("place"), onHp: set("hp"),
+      descCount: this.state.desc.length > DESC_MAX * 0.8 ? this.state.desc.length + " / " + DESC_MAX : "",
       sent, notSent: !sent, protocol: this.state.protocol,
       hasError: !!this.state.sendError, sendError: this.state.sendError,
       submitIcon: this.state.sending ? "spinner" : "paper-plane-tilt",
@@ -810,7 +968,7 @@ class Component extends DCLogic {
           // Honeypot: campo escondido de humanos via CSS que só um preenchimento
           // automático de formulário chega a tocar. Finge sucesso sem enviar
           // nada, pra não ensinar o bot a se adaptar.
-          this.setState({ sent: true, protocol: "CD-" + Math.floor(100000 + Math.random() * 900000) });
+          this.setState({ sent: true, protocol: makeProtocol() });
           return;
         }
         if (!kind || !desc.trim()) {
@@ -818,16 +976,19 @@ class Component extends DCLogic {
           return;
         }
         this.setState({ sending: true, sendError: "" });
-        const protocol = "CD-" + Math.floor(100000 + Math.random() * 900000);
+        const protocol = makeProtocol();
         try {
-          await this.submitDenuncia({ city, kind, description: desc.trim(), place: place.trim() || null, protocol });
+          await this.submitDenuncia({ city, kind, description: desc.trim().slice(0, DESC_MAX), place: place.trim().slice(0, 200) || null, protocol });
           this.setState({ sent: true, sending: false, protocol });
         } catch (err) {
-          this.setState({ sending: false, sendError: "Não foi possível enviar agora. Verifique sua conexão e tente novamente." });
+          const limited = err && err.rateLimited;
+          this.setState({ sending: false, sendError: limited
+            ? "Muitos envios recentes desta rede. Aguarde alguns minutos e tente de novo."
+            : "Não foi possível enviar agora. Verifique sua conexão e tente novamente." });
         }
       },
       resetForm: () => this.setState({ sent: false, kind: "", desc: "", place: "", hp: "", protocol: "", sendError: "" }),
-      quickExit: () => { window.location.replace("https://www.google.com"); }
+      quickExit: () => this.quickExit()
     };
   }
 }

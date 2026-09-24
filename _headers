@@ -1,4 +1,14 @@
+# Só vale na Netlify (e hosts que seguem essa convenção). O site hoje está na
+# Vercel, onde quem aplica estes headers é o vercel.json — mantenha os dois
+# iguais se mudar algo.
 /*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' https://sovnstjtiulvzdblmxts.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), browsing-topics=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
