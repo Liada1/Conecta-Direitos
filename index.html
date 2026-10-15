@@ -813,6 +813,11 @@ const ALL_PINS = Object.keys(CITIES).flatMap(city => CITIES[city].pins.map(p => 
 const REGION_CENTER = [-3.95, -40.9];
 // Mais longe que isso do centro do município mais próximo = fora da Ibiapaba.
 const MAX_NEAR_KM = 35;
+// Localização: para de refinar ao chegar nesta precisão (m) ou neste tempo;
+// acima de POOR_ACCURACY_M avisa que a posição veio imprecisa.
+const GOOD_ACCURACY_M = 30;
+const LOCATE_MAX_MS = 12000;
+const POOR_ACCURACY_M = 1500;
 
 // Distância em linha reta (haversine), em km.
 function distKm(a, b) {
@@ -853,7 +858,7 @@ class Component extends DCLogic {
   // fazia parecer que o site era só de Tianguá. reportCity é separado porque
   // a denúncia exige um município de verdade (a Edge Function valida).
   // userPos fica só na memória da página — nunca é enviado nem salvo.
-  state = { city: "", reportCity: "", userPos: null, locating: false, locMsg: "", filter: "apoio", openTrail: 0, copied: -1, kind: "", desc: "", place: "", hp: "", sent: false, protocol: "", sending: false, sendError: "" };
+  state = { city: "", reportCity: "", userPos: null, userAcc: 0, locating: false, locMsg: "", filter: "apoio", openTrail: 0, copied: -1, kind: "", desc: "", place: "", hp: "", sent: false, protocol: "", sending: false, sendError: "" };
 
   // Ícones são Phosphor via fonte/CSS (@phosphor-icons/web) — renderizam
   // puro CSS, sem hidratação em JS. Por isso não há mais um método icons()
@@ -882,6 +887,7 @@ class Component extends DCLogic {
   }
   componentWillUnmount() {
     if (this._mapRetry) clearInterval(this._mapRetry);
+    this.stopLocate();
     if (this._onKey) document.removeEventListener("keydown", this._onKey);
     if (this._map) { this._map.remove(); this._map = null; }
   }
@@ -1037,30 +1043,72 @@ class Component extends DCLogic {
   // reversa nem envio a servidor. Escolhe o município cujo centro está mais
   // perto e ordena os pontos por distância. A posição vive só em this.state
   // (some ao fechar/recarregar ou na saída rápida).
+  // Precisão: pede GPS (enableHighAccuracy) e nunca aceita posição guardada
+  // (maximumAge 0) — antes era o contrário, e o celular devolvia a posição
+  // da antena/Wi-Fi ou uma de minutos atrás, errando por quilômetros. A 1ª
+  // leitura costuma ser grosseira; watchPosition segue refinando por alguns
+  // segundos e fica com a de melhor precisão. Trocar o provedor do MAPA não
+  // muda nada disso: a posição vem do aparelho, o mapa só desenha o ponto.
   locate() {
     if (this.state.locating) return;
     if (!navigator.geolocation) {
       this.setState({ locMsg: "Este navegador não permite usar a localização. Escolha o município na lista." });
       return;
     }
+    this.stopLocate();
     this.setState({ locating: true, locMsg: "" });
-    navigator.geolocation.getCurrentPosition(pos => {
-      const u = [pos.coords.latitude, pos.coords.longitude];
-      let best = "", bestD = Infinity;
-      Object.keys(CITIES).forEach(c => {
-        const d = distKm(u, CITIES[c].center);
-        if (d < bestD) { bestD = d; best = c; }
-      });
-      if (bestD > MAX_NEAR_KM) {
-        this.setState({ locating: false, userPos: null, city: "", locMsg: "Você parece estar fora da Serra da Ibiapaba. Mostrando todos os municípios — escolha um na lista." });
-        return;
-      }
-      this.setState({ locating: false, userPos: u, city: best, locMsg: "Mostrando " + best + ", o município mais perto de você. Pontos em ordem de distância." });
+    // Token da busca atual: leitura que chegue depois de stopLocate() (pessoa
+    // já escolheu outra cidade, "Esquecer"...) é descartada, não sobrescreve.
+    const session = this._locSession = {};
+    let best = null;
+    const finish = () => {
+      if (this._locSession !== session) return;
+      this.stopLocate();
+      if (!best) this.setState({ locating: false, locMsg: "Não foi possível descobrir sua localização agora. Confira se a localização do aparelho está ligada, ou escolha o município na lista." });
+      else this.setState({ locating: false });
+    };
+    this._locWatch = navigator.geolocation.watchPosition(pos => {
+      if (this._locSession !== session) return;
+      if (best && pos.coords.accuracy >= best.coords.accuracy) return;
+      best = pos;
+      this.applyPosition(pos);
+      if (pos.coords.accuracy <= GOOD_ACCURACY_M) finish();
     }, err => {
+      if (this._locSession !== session || best) return; // já tem leitura: ignora falha de refinamento
+      this.stopLocate();
       this.setState({ locating: false, locMsg: err && err.code === 1
         ? "A permissão de localização foi negada. Tudo bem — escolha o município na lista."
-        : "Não foi possível descobrir sua localização agora. Escolha o município na lista." });
-    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
+        : "Não foi possível descobrir sua localização agora. Confira se a localização do aparelho está ligada, ou escolha o município na lista." });
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    this._locTimer = setTimeout(finish, LOCATE_MAX_MS);
+  }
+
+  stopLocate() {
+    if (this._locWatch != null && navigator.geolocation) navigator.geolocation.clearWatch(this._locWatch);
+    if (this._locTimer) clearTimeout(this._locTimer);
+    this._locWatch = null;
+    this._locTimer = null;
+    this._locSession = null;
+  }
+
+  applyPosition(pos) {
+    const u = [pos.coords.latitude, pos.coords.longitude];
+    const acc = pos.coords.accuracy || 0;
+    const accText = acc >= 1000 ? "~" + fmtDist(acc / 1000) : "~" + Math.max(5, Math.round(acc / 5) * 5) + " m";
+    let best = "", bestD = Infinity;
+    Object.keys(CITIES).forEach(c => {
+      const d = distKm(u, CITIES[c].center);
+      if (d < bestD) { bestD = d; best = c; }
+    });
+    if (bestD > MAX_NEAR_KM) {
+      this.setState({ userPos: null, userAcc: 0, city: "", locMsg: acc > POOR_ACCURACY_M
+        ? "Não deu para saber onde você está com precisão (erro de " + accText + "). Ligue o GPS do aparelho e tente de novo, ou escolha o município na lista."
+        : "Você parece estar fora da Serra da Ibiapaba. Mostrando todos os municípios — escolha um na lista." });
+      return;
+    }
+    this.setState({ userPos: u, userAcc: acc, city: best, locMsg: acc > POOR_ACCURACY_M
+      ? "Mostrando " + best + ", mas sua localização veio imprecisa (erro de " + accText + "). Isso é comum no computador ou com o GPS desligado — confira se o município está certo."
+      : "Mostrando " + best + ", o município mais perto de você (precisão de " + accText + "). Pontos em ordem de distância." });
   }
 
   // --- Denúncia anônima (Supabase Edge Function) ----------------------------
@@ -1109,7 +1157,7 @@ class Component extends DCLogic {
     const set = k => v => this.setState({ [k]: v.target.value });
     // Trocar de município na mão apaga a mensagem da localização (que diria
     // "Mostrando X" mesmo depois de a pessoa ter escolhido Y).
-    const pickCity = c => this.setState({ city: c, locMsg: "" });
+    const pickCity = c => { this.stopLocate(); this.setState({ city: c, locMsg: "", locating: false }); };
 
     const filters = [
       { key: "apoio", label: "Redes de Apoio", icon: "users" },
@@ -1204,8 +1252,8 @@ class Component extends DCLogic {
       locating, hasUserPos: !!userPos,
       locMsg: this.state.locMsg, hasLocMsg: !!this.state.locMsg,
       locate: () => this.locate(),
-      forgetLocation: () => this.setState({ userPos: null, locMsg: "" }),
-      locateLabel: locating ? "Localizando…" : (userPos ? "Atualizar localização" : "Usar minha localização"),
+      forgetLocation: () => { this.stopLocate(); this.setState({ userPos: null, userAcc: 0, locMsg: "", locating: false }); },
+      locateLabel: locating ? (userPos ? "Melhorando a precisão…" : "Localizando…") : (userPos ? "Atualizar localização" : "Usar minha localização"),
       locateIcon: locating ? "spinner" : "crosshair",
       locateIconStyle: "font-size:16px" + (locating ? ";animation:sc-spin .8s linear infinite" : ""),
       locateStyle: "display:flex;align-items:center;gap:7px;border-radius:7px;padding:9px 14px;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;cursor:" + (locating ? "default" : "pointer") +

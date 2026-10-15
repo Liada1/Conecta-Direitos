@@ -180,7 +180,14 @@ project's privacy stance). Rendered into `<div id="mapa-canvas">`. `initMap()` c
 - **"Usar minha localização"** (`locate()`): `navigator.geolocation` only, computed on-device —
   no reverse geocoding, nothing sent anywhere; `userPos` lives only in component state. Picks the
   nearest `CITIES[..].center` (> `MAX_NEAR_KM` = outside the region → stays in region mode),
-  shows a "você está aqui" marker and sorts pins by straight-line distance. Requires
+  shows a "você está aqui" marker and sorts pins by straight-line distance. Uses
+  `watchPosition` with `enableHighAccuracy: true, maximumAge: 0`, keeps the most accurate
+  reading, and stops at `GOOD_ACCURACY_M` or after `LOCATE_MAX_MS`. The first version used
+  `enableHighAccuracy: false` + a 5-min `maximumAge` and users reported the wrong location —
+  that was the cause, **not** the map provider (the map only draws the point the device
+  reports; Google's web geolocation is IP-based and would be worse). Readings worse than
+  `POOR_ACCURACY_M` show an "imprecisa" warning with the error radius. A `_locSession` token
+  drops late readings after `stopLocate()` (manual city pick, "Esquecer"). Requires
   `geolocation=(self)` in `Permissions-Policy` (`vercel.json`/`_headers`) — it was `()` before,
   which silently blocks the API.
 - `syncMap()` only rebuilds markers/re-fits when `city|filter|userPos` changes (`this._mapKey`),
