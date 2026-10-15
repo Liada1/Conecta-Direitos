@@ -148,6 +148,24 @@ Real Leaflet + OpenStreetMap map (loaded via CDN in `<helmet>`, no API key neede
 - `cityFacts` (the "Ficha do município" card) is derived directly from `data.pins` — never a
   separately-authored array — specifically so it can't drift into unverified claims. If you add a
   new confirmed pin, its `role`/`name` show up there automatically.
+- **City selection / "Toda a região"**: `state.city === ""` means the whole region and is the
+  default on load (opening on Tianguá made people think the site was Tianguá-only). Region mode
+  plots `ALL_PINS` (every city's pins tagged with `city`) and the list shows a per-city summary
+  instead of pins. Cities are picked via the chip row at the top of `#mapa` (`cityChips`) or the
+  header `<select>`; both go through `pickCity()`. The denúncia form has its own `reportCity`
+  (falls back to `city`) because the Edge Function requires a real municipality.
+- **"Usar minha localização"** (`locate()`): `navigator.geolocation` only, computed on-device —
+  no reverse geocoding, nothing sent anywhere; `userPos` lives only in component state. Picks the
+  nearest `CITIES[..].center` (> `MAX_NEAR_KM` = outside the region → stays in region mode),
+  shows a "você está aqui" marker and sorts pins by straight-line distance. Requires
+  `geolocation=(self)` in `Permissions-Policy` (`vercel.json`/`_headers`) — it was `()` before,
+  which silently blocks the API. The user marker must be a `divIcon`, **not** `circleMarker`:
+  adding a vector layer in `syncMap()` crashes Leaflet's SVG renderer (`reading 'x'`) and wipes
+  all markers.
+- `syncMap()` only rebuilds markers/re-fits when `city|filter|userPos` changes (`this._mapKey`),
+  since `componentDidUpdate` fires on every keystroke in the denúncia form.
+- "Como chegar" links (`routeUrl()`) open Google Maps directions: by lat/lng for geocoded pins,
+  by address text for `approx` pins (so nobody is routed to the town center as if exact).
 - Marker popups are built as raw HTML strings via `escapeHtml()` — keep using it for any pin field
   that ends up in a popup, since `bindPopup()` sets `innerHTML`.
 - Dropped entirely for lack of a verified source (don't reintroduce without one): operating hours

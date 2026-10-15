@@ -131,12 +131,14 @@
       <div style="display:flex;align-items:center;gap:clamp(8px,2.5vw,10px);flex-wrap:nowrap;min-width:0;max-width:100%">
         <label style="display:flex;align-items:center;gap:7px;background:oklch(0.99 0.008 75);border:1px solid oklch(0.89 0.02 65);border-radius:999px;padding:7px 12px 7px 14px;min-width:0;flex:0 1 auto">
           <span style="color:oklch(0.5 0.03 50);display:flex;flex:none" aria-hidden="true"><i class="ph-bold ph-map-pin" style="font-size:15px" aria-hidden="true"></i></span>
-          <span class="sr-only">Município</span>
-          <select value="{{ city }}" onChange="{{ onCity }}" style="appearance:none;border:none;background:none;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;color:oklch(0.3 0.03 45);cursor:pointer;outline:none;max-width:min(140px,38vw);min-width:0;width:100%">
+          <span class="sr-only">Escolha o município</span>
+          <select value="{{ city }}" onChange="{{ onCity }}" style="appearance:none;border:none;background:none;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;color:oklch(0.3 0.03 45);cursor:pointer;outline:none;max-width:min(140px,34vw);min-width:0;width:100%">
+            <option value="">Toda a região</option>
             <sc-for list="{{ cityNames }}" as="c" hint-placeholder-count="6">
               <option value="{{ c }}">{{ c }}</option>
             </sc-for>
           </select>
+          <span style="color:oklch(0.5 0.03 50);display:flex;flex:none;pointer-events:none" aria-hidden="true"><i class="ph-bold ph-caret-down" style="font-size:13px" aria-hidden="true"></i></span>
         </label>
         <button type="button" onClick="{{ quickExit }}" title="Sair imediatamente para um site neutro (atalho: tecla Esc)" aria-keyshortcuts="Escape" style="display:flex;align-items:center;gap:7px;flex:none;background:var(--ink);color:var(--paper-raised);border:none;border-radius:7px;padding:10px clamp(12px,4vw,16px);font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:oklch(0.32 0.02 55)">
           <i class="ph-bold ph-sign-out" style="font-size:16px" aria-hidden="true"></i>Saída rápida
@@ -149,9 +151,9 @@
   <section style="max-width:1000px;margin:0 auto;padding:clamp(32px,10vw,48px) 20px 8px">
     <p style="display:flex;align-items:center;gap:10px;margin:0 0 20px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint)"><span style="width:20px;height:1px;background:var(--line)"></span>Cartilha digital · 9 municípios da Ibiapaba</p>
     <h1 style="font-family:Newsreader,Georgia,serif;font-weight:600;font-style:italic;font-size:clamp(32px,7vw,50px);line-height:1.08;letter-spacing:-0.015em;margin:0 0 18px;max-width:19ch;text-wrap:pretty;color:var(--ink)">Orientação, cidadania e respeito na prática pública.</h1>
-    <p style="font-size:17px;line-height:1.6;color:var(--ink-soft);max-width:52ch;margin:0 0 30px;text-wrap:pretty">Onde buscar apoio, quais são os seus direitos e como denunciar sem se expor. Escolha o seu município no topo da página: mapa, telefones e endereços mudam junto.</p>
+    <p style="font-size:17px;line-height:1.6;color:var(--ink-soft);max-width:52ch;margin:0 0 30px;text-wrap:pretty">Onde buscar apoio, quais são os seus direitos e como denunciar sem se expor. Vale para os 9 municípios da serra — escolha o seu no mapa ou use a sua localização.</p>
     <div style="display:flex;flex-wrap:wrap;gap:10px">
-      <a href="#mapa" style="display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper-raised);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">Pontos de apoio em {{ city }}<i class="ph-bold ph-arrow-down" style="font-size:16px" aria-hidden="true"></i></a>
+      <a href="#mapa" style="display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper-raised);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">{{ heroCta }}<i class="ph-bold ph-arrow-down" style="font-size:16px" aria-hidden="true"></i></a>
       <a href="#trilhas" style="display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">O que fazer agora</a>
       <a href="#denuncia" style="display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:13px 20px;font-size:14.5px;font-weight:600">Denúncia anônima</a>
     </div>
@@ -162,9 +164,33 @@
   </section>
 
   <section id="mapa" style="max-width:1000px;margin:0 auto;padding:clamp(36px,9vw,56px) 20px 0">
-    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 8px">Mapa de acolhimento · {{ city }}</h2>
-    <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 20px;max-width:52ch">Serviços e espaços do município com atendimento respeitoso. Toque em um filtro para ver os pontos.</p>
+    <h2 style="font-family:Newsreader,Georgia,serif;font-weight:700;font-size:clamp(22px,5.6vw,26px);letter-spacing:-0.02em;text-wrap:balance;margin:0 0 8px">Mapa de acolhimento · {{ placeLabel }}</h2>
+    <p style="font-size:15.5px;line-height:1.6;color:oklch(0.45 0.02 60);margin:0 0 20px;max-width:56ch">Serviços e espaços com atendimento respeitoso nos 9 municípios da Serra da Ibiapaba. Escolha a sua cidade (ou use a sua localização) e depois o tipo de serviço.</p>
 
+    <div role="group" aria-labelledby="escolha-municipio" style="background:var(--paper-raised);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-bottom:12px">
+        <div id="escolha-municipio" style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft)"><i class="ph-bold ph-map-pin-area" style="font-size:15px;color:var(--accent)" aria-hidden="true"></i>1. Escolha o município</div>
+        <button type="button" onClick="{{ locate }}" aria-busy="{{ locating }}" style="{{ locateStyle }}" style-hover="filter:brightness(0.96)">
+          <i class="ph-bold ph-{{ locateIcon }}" style="{{ locateIconStyle }}" aria-hidden="true"></i>{{ locateLabel }}
+        </button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ cityChips }}" as="c" hint-placeholder-count="10">
+          <button type="button" onClick="{{ c.onClick }}" aria-pressed="{{ c.active }}" style="{{ c.style }}" style-hover="filter:brightness(0.97)">{{ c.label }}</button>
+        </sc-for>
+      </div>
+      <p aria-live="polite" style="margin:10px 0 0;font-size:13px;line-height:1.5;color:var(--ink-soft);display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px">
+        <sc-if value="{{ hasLocMsg }}" hint-placeholder-val="{{ false }}">
+          <span>{{ locMsg }}</span>
+        </sc-if>
+        <sc-if value="{{ hasUserPos }}" hint-placeholder-val="{{ false }}">
+          <button type="button" onClick="{{ forgetLocation }}" style="background:none;border:none;padding:2px 0;font-family:Karla,sans-serif;font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;text-decoration:underline">Esquecer minha localização</button>
+        </sc-if>
+      </p>
+      <p style="margin:8px 0 0;font-size:12px;line-height:1.5;color:var(--ink-faint);display:flex;align-items:flex-start;gap:6px"><i class="ph-bold ph-lock-simple" style="font-size:13px;margin-top:2px" aria-hidden="true"></i><span>A localização é usada só no seu aparelho, para achar o que está mais perto. Ela não é enviada ao Conecta Direitos nem fica guardada.</span></p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px"><i class="ph-bold ph-funnel-simple" style="font-size:15px;color:var(--accent)" aria-hidden="true"></i>2. Tipo de serviço</div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
       <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
         <button type="button" onClick="{{ f.onClick }}" aria-pressed="{{ f.active }}" style="{{ f.style }}" style-hover="filter:brightness(0.97)">
@@ -176,25 +202,44 @@
     <div style="border-radius:20px;overflow:hidden;border:1px solid oklch(0.9 0.02 70)">
       <div id="leaflet-map" role="region" aria-label="{{ mapLabel }}" style="height:clamp(230px,58vw,340px);position:relative;z-index:0;background:oklch(0.96 0.02 130)"></div>
       <div style="border-top:1px solid oklch(0.91 0.02 70);background:oklch(0.99 0.008 75);padding:16px 18px">
-        <sc-if value="{{ hasConfirmedPins }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ showCitySummary }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.02 60);margin-bottom:12px">{{ summaryTitle }}</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr));gap:8px">
+            <sc-for list="{{ citySummary }}" as="s" hint-placeholder-count="9">
+              <button type="button" onClick="{{ s.onClick }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:10px;background:oklch(0.97 0.014 75);border:1px solid oklch(0.93 0.02 70);cursor:pointer;text-align:left;font-family:Karla,sans-serif;color:var(--ink)" style-hover="border-color:var(--ink-faint)">
+                <span style="min-width:0">
+                  <span style="display:block;font-family:Newsreader,Georgia,serif;font-weight:600;font-size:15px">{{ s.name }}</span>
+                  <span style="display:block;font-size:12.5px;color:var(--ink-soft)">{{ s.count }}</span>
+                </span>
+                <i class="ph-bold ph-arrow-right" style="font-size:15px;color:var(--ink-faint);flex:none" aria-hidden="true"></i>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showPinList }}" hint-placeholder-val="{{ true }}">
           <div style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.02 60);margin-bottom:12px">{{ listTitle }}</div>
           <div style="display:grid;gap:10px">
             <sc-for list="{{ visiblePins }}" as="p" hint-placeholder-count="3">
               <div style="display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border-radius:12px;background:oklch(0.97 0.014 75);border:1px solid oklch(0.93 0.02 70)">
                 <span style="{{ p.dotStyle }}"><i class="ph-bold ph-{{ p.icon }}" style="font-size:16px" aria-hidden="true"></i></span>
-                <div style="min-width:0">
+                <div style="min-width:0;flex:1">
+                  <sc-if value="{{ p.showCity }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:11.5px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:2px">{{ p.city }}</div>
+                  </sc-if>
                   <div style="font-family:Newsreader,Georgia,serif;font-weight:600;font-size:15px;margin-bottom:3px">{{ p.name }}</div>
                   <div style="font-size:13.5px;line-height:1.5;color:oklch(0.46 0.02 60);margin-bottom:8px;overflow-wrap:anywhere">{{ p.detail }}</div>
-                  <sc-if value="{{ p.hasPhone }}" hint-placeholder-val="{{ true }}">
-                    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:oklch(0.42 0.02 60)">
-                      <sc-if value="{{ p.tel }}" hint-placeholder-val="{{ true }}">
-                        <a href="{{ p.tel }}" style="display:flex;align-items:center;gap:5px;color:var(--accent);font-weight:600;min-height:24px"><i class="ph-bold ph-phone" style="font-size:13px" aria-hidden="true"></i>{{ p.phone }}</a>
-                      </sc-if>
-                      <sc-if value="{{ !p.tel }}" hint-placeholder-val="{{ false }}">
-                        <span style="display:flex;align-items:center;gap:5px"><i class="ph-bold ph-phone" style="font-size:13px" aria-hidden="true"></i>{{ p.phone }}</span>
-                      </sc-if>
-                    </div>
-                  </sc-if>
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:12.5px;color:oklch(0.42 0.02 60)">
+                    <sc-if value="{{ p.hasDist }}" hint-placeholder-val="{{ false }}">
+                      <span style="display:flex;align-items:center;gap:5px;font-weight:600;color:var(--ink)"><i class="ph-bold ph-navigation-arrow" style="font-size:13px" aria-hidden="true"></i>{{ p.distLabel }}</span>
+                    </sc-if>
+                    <sc-if value="{{ p.tel }}" hint-placeholder-val="{{ true }}">
+                      <a href="{{ p.tel }}" style="display:flex;align-items:center;gap:5px;color:var(--accent);font-weight:600;min-height:24px"><i class="ph-bold ph-phone" style="font-size:13px" aria-hidden="true"></i>{{ p.phone }}</a>
+                    </sc-if>
+                    <sc-if value="{{ p.phoneText }}" hint-placeholder-val="{{ false }}">
+                      <span style="display:flex;align-items:center;gap:5px"><i class="ph-bold ph-phone" style="font-size:13px" aria-hidden="true"></i>{{ p.phone }}</span>
+                    </sc-if>
+                    <a href="{{ p.routeUrl }}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:5px;color:var(--accent);font-weight:600;min-height:24px"><i class="ph-bold ph-signpost" style="font-size:13px" aria-hidden="true"></i>Como chegar<span class="sr-only"> a {{ p.name }} (abre o Google Maps)</span></a>
+                  </div>
                   <sc-if value="{{ p.approx }}" hint-placeholder-val="{{ false }}">
                     <div style="display:flex;align-items:center;gap:5px;margin-top:6px;font-size:11.5px;color:oklch(0.5 0.1 60)"><i class="ph-bold ph-warning-circle" style="font-size:12px" aria-hidden="true"></i>Localização aproximada no mapa (centro do município) — confirme o endereço por telefone</div>
                   </sc-if>
@@ -204,10 +249,10 @@
           </div>
           <p style="font-size:12px;color:oklch(0.58 0.015 60);margin:14px 0 0;line-height:1.5">Endereços e telefones oficiais cruzados (Secretarias, SSPDS-CE e Diários Oficiais). Confirme por telefone antes de se deslocar.</p>
         </sc-if>
-        <sc-if value="{{ !hasConfirmedPins }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex;align-items:flex-start;gap:10px;padding:4px 2px">
             <span style="color:oklch(0.5 0.08 60);flex:none;margin-top:1px"><i class="ph-bold ph-info" style="font-size:18px" aria-hidden="true"></i></span>
-            <p style="margin:0;font-size:14px;line-height:1.6;color:oklch(0.4 0.03 60)">Ainda estamos confirmando os pontos de apoio de <strong>{{ city }}</strong> com endereço e telefone oficiais. Enquanto isso, use os telefones gratuitos abaixo — valem para todo o estado.</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:oklch(0.4 0.03 60)">Ainda não há pontos de <strong>{{ filterLabel }}</strong> confirmados com endereço e telefone oficiais em <strong>{{ placeLabel }}</strong>. Veja outro tipo de serviço acima ou use os telefones gratuitos abaixo — valem para todo o estado.</p>
           </div>
         </sc-if>
       </div>
@@ -227,7 +272,10 @@
         <p style="font-size:12px;color:var(--ink-faint);margin:12px 0 0;line-height:1.5">Ligações gratuitas e sigilosas, 24 horas.</p>
       </div>
       <div style="background:var(--paper-raised);border:1px solid var(--line);border-radius:10px;padding:18px">
-        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-buildings" style="font-size:15px" aria-hidden="true"></i>Ficha do município</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px"><i class="ph-bold ph-buildings" style="font-size:15px" aria-hidden="true"></i>{{ factsTitle }}</div>
+        <sc-if value="{{ !city }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0;font-size:14px;line-height:1.6;color:var(--ink-soft)">Escolha um município acima para ver a ficha com CREAS, delegacia, saúde e lazer da cidade.</p>
+        </sc-if>
         <div style="display:grid;gap:9px;font-size:14px;color:var(--ink-soft)">
           <sc-for list="{{ cityFacts }}" as="f" hint-placeholder-count="4">
             <div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">
@@ -394,7 +442,8 @@
         <div style="display:grid;gap:18px;max-width:620px">
           <label style="display:grid;gap:7px">
             <span style="font-size:13.5px;font-weight:600;color:oklch(0.32 0.03 45)">Município</span>
-            <select value="{{ city }}" onChange="{{ onCity }}" style="appearance:none;width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60);cursor:pointer">
+            <select value="{{ reportCity }}" onChange="{{ onReportCity }}" required="required" aria-required="true" style="appearance:none;width:100%;background:oklch(0.995 0.005 75);border:1px solid oklch(0.87 0.025 60);border-radius:12px;padding:14px 16px;font-family:Karla,sans-serif;font-size:15.5px;color:oklch(0.24 0.02 60);cursor:pointer">
+              <option value="">Selecione o município</option>
               <sc-for list="{{ cityNames }}" as="c" hint-placeholder-count="6">
                 <option value="{{ c }}">{{ c }}</option>
               </sc-for>
@@ -738,6 +787,37 @@ function telHref(phone) {
   return "tel:+55" + m[1] + m[2].replace(/\D/g, "");
 }
 
+// Todos os pins da região, cada um sabendo de que município é — usado no modo
+// "Toda a região" (city === "") e na busca por localização.
+const ALL_PINS = Object.keys(CITIES).flatMap(city => CITIES[city].pins.map(p => ({ ...p, city })));
+
+// Centro aproximado da serra, para quando nada mais serve de referência.
+const REGION_CENTER = [-3.95, -40.9];
+// Mais longe que isso do centro do município mais próximo = fora da Ibiapaba.
+const MAX_NEAR_KM = 35;
+
+// Distância em linha reta (haversine), em km.
+function distKm(a, b) {
+  const R = 6371, rad = Math.PI / 180;
+  const dLat = (b[0] - a[0]) * rad, dLng = (b[1] - a[1]) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a[0] * rad) * Math.cos(b[0] * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function fmtDist(km) {
+  if (km < 1) return Math.max(50, Math.round(km * 1000 / 50) * 50) + " m";
+  return (km < 10 ? km.toFixed(1).replace(".", ",") : Math.round(km)) + " km";
+}
+
+// Rota no Google Maps a partir de onde a pessoa está (o próprio app pega a
+// posição; nada sai daqui). Pin com coordenada geocodificada vai por lat/lng;
+// pin `approx` vai pelo texto do endereço, pra não mandar ninguém pro centro
+// da cidade achando que é o endereço exato.
+function routeUrl(p) {
+  const dest = p.approx ? p.name + ", " + p.detail + ", " + p.city + " - CE" : p.lat + "," + p.lng;
+  return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(dest);
+}
+
 // Protocolo da denúncia: CD-XXXX-XXXX com gerador criptográfico (não
 // Math.random) e alfabeto sem caracteres ambíguos (0/O, 1/I/L). ~8,5×10¹¹
 // combinações — o formato antigo CD-###### (900 mil) começava a colidir por
@@ -751,7 +831,11 @@ function makeProtocol() {
 }
 
 class Component extends DCLogic {
-  state = { city: "Tianguá", filter: "apoio", openTrail: 0, copied: -1, kind: "", desc: "", place: "", hp: "", sent: false, protocol: "", sending: false, sendError: "" };
+  // city "" = "Toda a região". Começa assim de propósito: abrir já em Tianguá
+  // fazia parecer que o site era só de Tianguá. reportCity é separado porque
+  // a denúncia exige um município de verdade (a Edge Function valida).
+  // userPos fica só na memória da página — nunca é enviado nem salvo.
+  state = { city: "", reportCity: "", userPos: null, locating: false, locMsg: "", filter: "apoio", openTrail: 0, copied: -1, kind: "", desc: "", place: "", hp: "", sent: false, protocol: "", sending: false, sendError: "" };
 
   // Ícones são Phosphor via fonte/CSS (@phosphor-icons/web) — renderizam
   // puro CSS, sem hidratação em JS. Por isso não há mais um método icons()
@@ -806,7 +890,7 @@ class Component extends DCLogic {
   initMap() {
     const el = document.getElementById("leaflet-map");
     if (!el || this._map || !window.L) return;
-    this._map = window.L.map(el, { scrollWheelZoom: false }).setView([-3.95, -40.95], 10);
+    this._map = window.L.map(el, { scrollWheelZoom: false, zoomSnap: 0.5 }).setView([-3.95, -40.95], 10);
     window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
       attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
@@ -817,12 +901,37 @@ class Component extends DCLogic {
 
   syncMap() {
     if (!this._map || !this._markers) return;
-    const { city, filter } = this.state;
-    const data = CITIES[city] || CITIES["Tianguá"];
-    this._map.setView(data.center, 13);
+    const { city, filter, userPos } = this.state;
+    // componentDidUpdate roda a cada tecla digitada no formulário; só refaz
+    // marcadores/enquadramento quando algo que o mapa mostra mudou — senão a
+    // pessoa arrasta o mapa e ele "pula" de volta sozinho.
+    const key = city + "|" + filter + "|" + (userPos ? userPos.join(",") : "");
+    if (key === this._mapKey) return;
+    this._mapKey = key;
     this._markers.clearLayers();
     // Mostra somente os pontos da categoria selecionada — não o mapa inteiro.
-    const visible = data.pins.filter(p => p.cat === filter);
+    const visible = (city ? ALL_PINS.filter(p => p.city === city) : ALL_PINS).filter(p => p.cat === filter);
+    const points = visible.map(p => [p.lat, p.lng]);
+    if (city) points.push(CITIES[city].center);
+    if (userPos) {
+      points.push(userPos);
+      // divIcon, não circleMarker: um layer vetorial aqui quebra o renderer
+      // SVG do Leaflet ("reading 'x'") e o mapa fica sem nenhum marcador.
+      const me = window.L.divIcon({
+        className: "",
+        html: "<div style=\"width:18px;height:18px;border-radius:50%;background:#2f6fdf;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,111,223,.22),0 1px 4px rgba(0,0,0,.3)\"></div>",
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -10]
+      });
+      window.L.marker(userPos, { icon: me, zIndexOffset: 1000, title: "Você está aqui" })
+        .addTo(this._markers).bindPopup("<div style=\"font-family:Karla,system-ui,sans-serif;font-size:12.5px\">Você está aqui (aproximado)</div>");
+    }
+    // O container pode ter mudado de tamanho desde o initMap (fontes/layout
+    // terminando de carregar); sem isso o fitBounds calcula zoom errado.
+    this._map.invalidateSize();
+    if (points.length > 1) this._map.fitBounds(points, { padding: [30, 30], maxZoom: city ? 14 : 12 });
+    else this._map.setView(points[0] || REGION_CENTER, city ? 13 : 9);
     visible.forEach(p => {
       const pal = PALETTE[p.cat];
       const border = p.approx ? "2px dashed #fff" : "2px solid #fff";
@@ -839,13 +948,46 @@ class Component extends DCLogic {
       const phoneLine = !p.phone ? "" : "<div style=\"font-size:11.5px;color:#333;margin-top:4px\">" +
         (tel ? "<a href=\"" + this.escapeHtml(tel) + "\">" + phoneText + "</a>" : phoneText) + "</div>";
       const approxLine = p.approx ? "<div style=\"font-size:11px;color:#a15c00;margin-top:6px\">📍 Localização aproximada (centro do município) — confirme o endereço por telefone.</div>" : "";
-      const html = "<div style=\"font-family:Karla,system-ui,sans-serif;max-width:220px\">" +
+      const cityLine = city ? "" : "<div style=\"font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#777;margin-bottom:2px\">" + this.escapeHtml(p.city) + "</div>";
+      const routeLine = "<div style=\"font-size:11.5px;margin-top:6px\"><a href=\"" + this.escapeHtml(routeUrl(p)) + "\" target=\"_blank\" rel=\"noopener noreferrer\">Como chegar →</a></div>";
+      const html = "<div style=\"font-family:Karla,system-ui,sans-serif;max-width:220px\">" + cityLine +
         "<div style=\"font-family:Newsreader,Georgia,serif;font-weight:700;font-size:13.5px;margin-bottom:4px\">" + this.escapeHtml(p.name) + "</div>" +
         "<div style=\"font-size:12px;line-height:1.5;color:#555\">" + this.escapeHtml(p.detail) + "</div>" +
-        phoneLine + approxLine +
+        phoneLine + approxLine + routeLine +
         "</div>";
       window.L.marker([p.lat, p.lng], { icon }).addTo(this._markers).bindPopup(html);
     });
+  }
+
+  // --- Localização do usuário ----------------------------------------------
+  // Só navigator.geolocation, no próprio aparelho: nada de geocodificação
+  // reversa nem envio a servidor. Escolhe o município cujo centro está mais
+  // perto e ordena os pontos por distância. A posição vive só em this.state
+  // (some ao fechar/recarregar ou na saída rápida).
+  locate() {
+    if (this.state.locating) return;
+    if (!navigator.geolocation) {
+      this.setState({ locMsg: "Este navegador não permite usar a localização. Escolha o município na lista." });
+      return;
+    }
+    this.setState({ locating: true, locMsg: "" });
+    navigator.geolocation.getCurrentPosition(pos => {
+      const u = [pos.coords.latitude, pos.coords.longitude];
+      let best = "", bestD = Infinity;
+      Object.keys(CITIES).forEach(c => {
+        const d = distKm(u, CITIES[c].center);
+        if (d < bestD) { bestD = d; best = c; }
+      });
+      if (bestD > MAX_NEAR_KM) {
+        this.setState({ locating: false, userPos: null, city: "", locMsg: "Você parece estar fora da Serra da Ibiapaba. Mostrando todos os municípios — escolha um na lista." });
+        return;
+      }
+      this.setState({ locating: false, userPos: u, city: best, locMsg: "Mostrando " + best + ", o município mais perto de você. Pontos em ordem de distância." });
+    }, err => {
+      this.setState({ locating: false, locMsg: err && err.code === 1
+        ? "A permissão de localização foi negada. Tudo bem — escolha o município na lista."
+        : "Não foi possível descobrir sua localização agora. Escolha o município na lista." });
+    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
   }
 
   // --- Denúncia anônima (Supabase Edge Function) ----------------------------
@@ -890,23 +1032,55 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { city, filter, sent, openTrail, copied } = this.state;
-    const data = CITIES[city] || CITIES["Tianguá"];
+    const { city, filter, sent, openTrail, copied, userPos, locating } = this.state;
     const set = k => v => this.setState({ [k]: v.target.value });
+    // Trocar de município na mão apaga a mensagem da localização (que diria
+    // "Mostrando X" mesmo depois de a pessoa ter escolhido Y).
+    const pickCity = c => this.setState({ city: c, locMsg: "" });
 
     const filters = [
       { key: "apoio", label: "Redes de Apoio", icon: "users" },
       { key: "saude", label: "Saúde", icon: "stethoscope" },
       { key: "lazer", label: "Lazer Seguro", icon: "sun" }
     ].map(f => ({ ...f, active: filter === f.key, style: this.chip(filter === f.key, f.key), onClick: () => this.setState({ filter: f.key }) }));
+    const filterLabel = filters.find(f => f.key === filter).label;
 
-    const pins = data.pins.map(p => ({
-      ...p,
-      onClick: () => this.setState({ filter: p.cat }),
-      dotStyle: this.iconBox(p.cat, 34),
-      hasPhone: !!p.phone,
-      tel: telHref(p.phone)
+    const cityChips = [{ key: "", label: "Toda a região" }].concat(Object.keys(CITIES).map(c => ({ key: c, label: c }))).map(c => ({
+      ...c,
+      active: city === c.key,
+      onClick: () => pickCity(c.key),
+      style: "font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;border-radius:999px;padding:8px 14px;cursor:pointer;transition:all .15s;" +
+        (city === c.key
+          ? "background:var(--ink);color:var(--paper-raised);border:1px solid var(--ink)"
+          : "background:var(--paper);color:var(--ink);border:1px solid var(--line)")
     }));
+
+    const pins = (city ? ALL_PINS.filter(p => p.city === city) : ALL_PINS).map(p => {
+      const tel = telHref(p.phone);
+      const d = userPos ? distKm(userPos, [p.lat, p.lng]) : null;
+      return {
+        ...p,
+        dotStyle: this.iconBox(p.cat, 34),
+        tel,
+        phoneText: !!p.phone && !tel,
+        showCity: !city,
+        dist: d,
+        hasDist: d != null,
+        distLabel: d == null ? "" : "≈ " + fmtDist(d) + (p.approx ? " (até o centro da cidade)" : " em linha reta"),
+        routeUrl: routeUrl(p)
+      };
+    });
+    let visiblePins = pins.filter(p => p.cat === filter);
+    if (userPos) visiblePins.sort((a, b) => a.dist - b.dist);
+    // Região inteira + localização: só os mais próximos, senão vira lista enorme.
+    if (!city && userPos) visiblePins = visiblePins.slice(0, 6);
+    const showCitySummary = !city && !userPos;
+    const placeLabel = city || "Serra da Ibiapaba";
+
+    const citySummary = Object.keys(CITIES).map(c => {
+      const n = CITIES[c].pins.filter(p => p.cat === filter).length;
+      return { name: c, count: n ? n + (n === 1 ? " ponto" : " pontos") + " de " + filterLabel.toLowerCase() : "Ver pontos do município", onClick: () => pickCity(c) };
+    });
 
     const decorate = c => ({ ...c, style: CARD, iconStyle: this.iconBox(c.tone) });
 
@@ -935,16 +1109,36 @@ class Component extends DCLogic {
     }));
 
     return {
-      city, cityNames: Object.keys(CITIES), onCity: set("city"),
+      city, cityNames: Object.keys(CITIES), onCity: v => pickCity(v.target.value),
+      placeLabel, filterLabel, cityChips,
+      heroCta: city ? "Pontos de apoio em " + city : "Encontrar apoio na minha cidade",
       // Ficha do município deriva direto dos pins reais (nunca inventa um
       // campo — ex.: "Coletivo local" — que o Guia_Oficial... não confirma).
-      cityFacts: data.pins.map(p => ({ label: p.role, value: p.name })),
+      cityFacts: city ? CITIES[city].pins.map(p => ({ label: p.role, value: p.name })) : [],
+      factsTitle: city ? "Ficha de " + city : "Ficha do município",
       stateContacts: STATE_CONTACTS.map(c => ({ ...c, tel: "tel:" + c.number, ariaLabel: "Ligar para " + c.name + ", " + c.number })),
-      mapLabel: "Mapa de " + city + " com os pontos de " + filters.find(f => f.key === filter).label.toLowerCase(),
-      filters, pins,
-      hasConfirmedPins: data.pins.length > 0,
-      visiblePins: pins.filter(p => p.cat === filter),
-      listTitle: filters.find(f => f.key === filter).label + " · " + pins.filter(p => p.cat === filter).length + " locais em " + city,
+      mapLabel: "Mapa de " + placeLabel + " com os pontos de " + filterLabel.toLowerCase(),
+      filters,
+      showCitySummary,
+      summaryTitle: "Escolha o município para ver endereços e telefones",
+      citySummary,
+      showPinList: !showCitySummary && visiblePins.length > 0,
+      showEmpty: !showCitySummary && visiblePins.length === 0,
+      visiblePins,
+      listTitle: filterLabel + " · " + (!city && userPos
+        ? "os " + visiblePins.length + " mais perto de você"
+        : visiblePins.length + (visiblePins.length === 1 ? " local em " : " locais em ") + city + (userPos ? ", do mais perto ao mais longe" : "")),
+      locating, hasUserPos: !!userPos,
+      locMsg: this.state.locMsg, hasLocMsg: !!this.state.locMsg,
+      locate: () => this.locate(),
+      forgetLocation: () => this.setState({ userPos: null, locMsg: "" }),
+      locateLabel: locating ? "Localizando…" : (userPos ? "Atualizar localização" : "Usar minha localização"),
+      locateIcon: locating ? "spinner" : "crosshair",
+      locateIconStyle: "font-size:16px" + (locating ? ";animation:sc-spin .8s linear infinite" : ""),
+      locateStyle: "display:flex;align-items:center;gap:7px;border-radius:7px;padding:9px 14px;font-family:Karla,sans-serif;font-size:13.5px;font-weight:600;cursor:" + (locating ? "default" : "pointer") +
+        ";background:var(--accent-soft);color:var(--accent);border:1px solid oklch(0.85 0.05 35)",
+      reportCity: this.state.reportCity || city,
+      onReportCity: set("reportCity"),
       trails, templates, glossary: GLOSSARY, dos: DOS, donts: DONTS,
       rightsCards: RIGHTS.map(decorate),
       healthCards: HEALTH.map(decorate),
@@ -963,7 +1157,8 @@ class Component extends DCLogic {
           : "background:var(--ink);cursor:pointer"),
       submit: async () => {
         if (this.state.sending) return;
-        const { city, kind, desc, place, hp } = this.state;
+        const { kind, desc, place, hp } = this.state;
+        const city = this.state.reportCity || this.state.city;
         if (hp) {
           // Honeypot: campo escondido de humanos via CSS que só um preenchimento
           // automático de formulário chega a tocar. Finge sucesso sem enviar
@@ -971,8 +1166,8 @@ class Component extends DCLogic {
           this.setState({ sent: true, protocol: makeProtocol() });
           return;
         }
-        if (!kind || !desc.trim()) {
-          this.setState({ sendError: "Selecione o tipo de ocorrência e escreva a descrição." });
+        if (!city || !kind || !desc.trim()) {
+          this.setState({ sendError: "Selecione o município e o tipo de ocorrência, e escreva a descrição." });
           return;
         }
         this.setState({ sending: true, sendError: "" });
@@ -987,7 +1182,7 @@ class Component extends DCLogic {
             : "Não foi possível enviar agora. Verifique sua conexão e tente novamente." });
         }
       },
-      resetForm: () => this.setState({ sent: false, kind: "", desc: "", place: "", hp: "", protocol: "", sendError: "" }),
+      resetForm: () => this.setState({ sent: false, reportCity: "", kind: "", desc: "", place: "", hp: "", protocol: "", sendError: "" }),
       quickExit: () => this.quickExit()
     };
   }
