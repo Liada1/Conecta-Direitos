@@ -32,7 +32,7 @@ The project is:
 - `_headers` — the same headers in Netlify syntax. **Vercel ignores this file** (production had no
   `X-Frame-Options` until `vercel.json` was added — verify with `curl -sI`). Kept in sync only in
   case the host changes.
-- `vendor/` — self-hosted third-party assets: React/ReactDOM 18.3.1, Leaflet 1.9.4, Phosphor bold
+- `vendor/` — self-hosted third-party assets: React/ReactDOM 18.3.1, MapLibre GL 4.7.1 (CSP build + `style.json`), Phosphor bold
   2.1.1, and Newsreader/Karla/JetBrains Mono (latin + latin-ext woff2, `vendor/fonts/fonts.css`).
   Byte-identical to the unpkg files whose SRI hashes were pinned before. `vendor/resources.js` sets
   `window.__resources` so `support.js` loads React from here instead of unpkg (its `cdnScriptFor()`
@@ -67,7 +67,7 @@ The file has two parts:
    - `style-hover="…"` — a dc-runtime-specific attribute for hover styles (plain inline `style`
      covers the base state; there is no separate CSS/stylesheet file).
    - `<helmet>…</helmet>` at the top of `<x-dc>` — head content (local `vendor/` stylesheets for
-     fonts/icons/Leaflet, `leaflet.js`, global `<style>` with the design tokens described below,
+     fonts/icons/MapLibre, `maplibre-gl-csp.js`, global `<style>` with the design tokens described below,
      focus-visible/skip-link/`.sr-only`/reduced-motion rules).
    - camelCase attributes (`maxLength`, `tabIndex`, `autoComplete`) reach React correctly; lowercase
      `tabindex` etc. don't. `aria-*` pass through, and `aria-x="{{ bool }}"` works.
@@ -122,11 +122,34 @@ washes) toward a more restrained editorial style, while keeping it minimal:
 
 ## The map (`#mapa`)
 
-Real Leaflet + OpenStreetMap map (loaded via CDN in `<helmet>`, no API key needed), rendered into
-`<div id="leaflet-map">`. `initMap()` creates the `L.map`/tile layer/marker `L.layerGroup` once;
-`syncMap()` re-centers on `CITIES[city].center` and repopulates markers on every update, but
-**only for pins matching the active category filter** (`data.pins.filter(p => p.cat === filter)`)
-— that's the "só os pontos necessários" behavior, not a dimmed/full list.
+Vector map: **MapLibre GL JS 4.7.1** (self-hosted in `vendor/maplibre/`, CSP build — the worker
+is `maplibre-gl-csp-worker.js` set via `setWorkerUrl`, so the CSP needs no `blob:` worker) with
+**OpenFreeMap** vector tiles (`tiles.openfreemap.org` — free, no API key, no usage limit). Replaced
+Leaflet + raster OSM tiles in out/2026 because the owner wanted a more professional-looking map;
+Google Maps was rejected (billing/API key, and it sends every visitor's IP to Google — against the
+project's privacy stance). Rendered into `<div id="mapa-canvas">`. `initMap()` creates the map once;
+`syncMap()` repopulates markers **only for pins matching the active category filter** — that's the
+"só os pontos necessários" behavior, not a dimmed/full list.
+
+- **MapLibre coordinates are `[lng, lat]`**; every array in this file (`CITIES`, pins, `userPos`,
+  `REGION_CENTER`) is `[lat, lng]`. Always swap at the MapLibre boundary.
+- `vendor/maplibre/style.json` is OpenFreeMap's Positron style recolored to the site's warm
+  "paper" palette (unused `ne2_shaded` raster source removed). Tiles/glyphs/sprites still load
+  from `tiles.openfreemap.org` (CSP `connect-src`). `vercel.json` caches `vendor/maplibre/` as
+  `immutable` for a year — **if you edit `style.json`, rename it** (e.g. `style-v2.json`) or
+  returning visitors keep the old one.
+- Markers are DOM elements (`.cd-pin`, `.cd-me`, styled by CSS classes in `<helmet>`), popups are
+  `maplibregl.Popup().setHTML()` styled via `.maplibregl-popup-*` / `.cd-pop-*`.
+- Pass `fitBounds` a **plain array** `[[lngMin, latMin], [lngMax, latMax]]`, never a
+  `LngLatBounds` object: in this build that throws inside `adjustAntiMeridian` ("reading 'lng'"),
+  and dc-runtime swallows errors from `componentDidUpdate`, so the map just silently stops moving.
+- No WebGL → `initMap()` catches the constructor error and shows a message in the map box; the
+  list below the map has the same data.
+- Testing note: in the Claude-in-Chrome automation window `document.visibilityState` is
+  `hidden`, so `requestAnimationFrame` never fires and MapLibre **never draws** (blank map, no
+  errors). Not a site bug. To see it, serve a temp copy of `index.html` that loads a script
+  replacing `requestAnimationFrame` with `setTimeout` *before* `support.js` (inline scripts are
+  blocked by the CSP), and delete it afterwards.
 
 - `CITIES[cityName].center` is a real `[lat, lng]` — sourced from Wikipedia/Wikidata/IBGE/IPECE
   for each municipality's town center.
@@ -143,7 +166,7 @@ Real Leaflet + OpenStreetMap map (loaded via CDN in `<helmet>`, no API key neede
   **Never treat a PDF-supplied GPS pair as trustworthy on its own — always geocode the address
   text instead** if more pins are added later.
 - `p.approx` pins are visibly marked, not silently placed as if precise: dashed/translucent marker
-  + a "localização aproximada" line in the Leaflet popup (`syncMap()`), and the same note under the
+  + a "localização aproximada" line in the map popup (`syncMap()`), and the same note under the
   pin in the `#mapa` list (`<sc-if value="{{ p.approx }}">`). Keep both in sync if you touch either.
 - `cityFacts` (the "Ficha do município" card) is derived directly from `data.pins` — never a
   separately-authored array — specifically so it can't drift into unverified claims. If you add a
@@ -159,9 +182,7 @@ Real Leaflet + OpenStreetMap map (loaded via CDN in `<helmet>`, no API key neede
   nearest `CITIES[..].center` (> `MAX_NEAR_KM` = outside the region → stays in region mode),
   shows a "você está aqui" marker and sorts pins by straight-line distance. Requires
   `geolocation=(self)` in `Permissions-Policy` (`vercel.json`/`_headers`) — it was `()` before,
-  which silently blocks the API. The user marker must be a `divIcon`, **not** `circleMarker`:
-  adding a vector layer in `syncMap()` crashes Leaflet's SVG renderer (`reading 'x'`) and wipes
-  all markers.
+  which silently blocks the API.
 - `syncMap()` only rebuilds markers/re-fits when `city|filter|userPos` changes (`this._mapKey`),
   since `componentDidUpdate` fires on every keystroke in the denúncia form.
 - "Como chegar" links (`routeUrl()`) open Google Maps directions: by lat/lng for geocoded pins,
@@ -215,7 +236,8 @@ against the REST API. The Edge Function is what actually prevents that:
 
 - **CSP** (`<meta http-equiv="Content-Security-Policy">` in `<head>`, duplicated as a real header in
   `vercel.json`/`_headers` — keep all three identical except `frame-ancestors`, header-only):
-  everything is `'self'` except OSM tiles (`img-src`) and the Supabase project (`connect-src`).
+  everything is `'self'` except OpenFreeMap tiles/fonts/sprites and the Supabase project (both
+  `connect-src`; `img-src` also allows `blob:` for MapLibre).
   No `'unsafe-inline'` in `script-src` (nothing needs it; JSON-LD isn't executed). Includes `'unsafe-eval'` in `script-src` — this is
   required, not optional: `support.js` runs the component logic via `new Function(...)`, and
   removing `unsafe-eval` breaks the entire page (map, filters, form). `connect-src` hardcodes the

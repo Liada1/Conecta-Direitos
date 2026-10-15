@@ -55,7 +55,7 @@
   ]
 }
 </script>
-<!-- Tudo (React, Leaflet, ícones, fontes) é servido do próprio site, em
+<!-- Tudo (React, MapLibre, ícones, fontes) é servido do próprio site, em
      vendor/ — nada de unpkg.com nem Google Fonts. Motivos: se o CDN cair o
      site não fica em branco, e o IP de quem acessa (público vulnerável) não
      vai para terceiros. Única origem externa que sobra é a dos tiles do
@@ -69,7 +69,7 @@
      frame-ancestors NÃO vai aqui de propósito: navegadores ignoram essa
      diretiva quando entregue via <meta>. Ela vem como header HTTP real do
      vercel.json (a Vercel ignora o arquivo _headers, que é da Netlify). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' https://sovnstjtiulvzdblmxts.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://tiles.openfreemap.org https://sovnstjtiulvzdblmxts.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <link rel="preload" href="./vendor/react/react.production.min.js" as="script">
 <link rel="preload" href="./vendor/react/react-dom.production.min.js" as="script">
 <link rel="preload" href="./vendor/fonts/Karla-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -83,8 +83,8 @@
 <helmet>
 <link rel="stylesheet" href="./vendor/fonts/fonts.css" />
 <link rel="stylesheet" href="./vendor/phosphor/style.css" />
-<link rel="stylesheet" href="./vendor/leaflet/leaflet.css" />
-<script src="./vendor/leaflet/leaflet.js"></script>
+<link rel="stylesheet" href="./vendor/maplibre/maplibre-gl.css" />
+<script src="./vendor/maplibre/maplibre-gl-csp.js"></script>
 <style>
   :root {
     --ink: oklch(0.22 0.015 55);
@@ -103,7 +103,25 @@
   .ph-bold { font-size: 22px; }
   html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
   section[id] { scroll-margin-top: 120px; }
-  .leaflet-container { font-family: Karla, system-ui, sans-serif; }
+  .maplibregl-map { font-family: Karla, system-ui, sans-serif; }
+  .maplibregl-popup-content { font-family: Karla, system-ui, sans-serif; background: var(--paper-raised); color: var(--ink); border-radius: 10px; padding: 13px 30px 13px 15px; box-shadow: 0 6px 24px oklch(0.3 0.03 55 / 0.16), 0 1px 3px oklch(0.3 0.03 55 / 0.12); }
+  .maplibregl-popup-close-button { font-size: 18px; width: 28px; height: 28px; color: var(--ink-faint); border-radius: 0 10px 0 7px; }
+  .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--paper-raised); }
+  .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--paper-raised); }
+  .cd-pop-city { font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 2px; }
+  .cd-pop-name { font-family: Newsreader, Georgia, serif; font-weight: 700; font-size: 15px; line-height: 1.25; margin-bottom: 4px; }
+  .cd-pop-detail { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+  .cd-pop-phone { font-size: 12.5px; margin-top: 6px; font-weight: 600; }
+  .cd-pop-approx { font-size: 11.5px; line-height: 1.45; color: oklch(0.5 0.1 60); margin-top: 6px; }
+  .cd-pop-route { display: inline-block; font-size: 12.5px; font-weight: 600; margin-top: 8px; }
+  .cd-pin { cursor: pointer; }
+  .cd-pin > span { width: 32px; height: 32px; border-radius: 50% 50% 50% 4px; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; background: var(--pin-bg); border: 2px solid #fff; box-shadow: 0 2px 8px oklch(0.25 0.03 55 / 0.3); transition: transform .15s; }
+  .cd-pin > span > i { transform: rotate(45deg); font-size: 15px; color: var(--pin-fg); }
+  .cd-pin:hover > span { transform: rotate(-45deg) scale(1.1); }
+  .cd-pin-approx > span { border-style: dashed; opacity: .78; }
+  .cd-me { width: 18px; height: 18px; border-radius: 50%; background: #2f6fdf; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); position: relative; }
+  .cd-me::after { content: ""; position: absolute; inset: -9px; border-radius: 50%; background: rgba(47,111,223,.22); animation: cd-pulse 2s ease-out infinite; }
+  @keyframes cd-pulse { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offset: 0; }
   .skip-link { position: absolute; left: 12px; top: -60px; z-index: 100; background: var(--ink); color: var(--paper-raised); padding: 10px 14px; border-radius: 7px; font-weight: 600; }
@@ -200,7 +218,7 @@
     </div>
 
     <div style="border-radius:20px;overflow:hidden;border:1px solid oklch(0.9 0.02 70)">
-      <div id="leaflet-map" role="region" aria-label="{{ mapLabel }}" style="height:clamp(230px,58vw,340px);position:relative;z-index:0;background:oklch(0.96 0.02 130)"></div>
+      <div id="mapa-canvas" role="region" aria-label="{{ mapLabel }}" style="height:clamp(320px,85vw,380px);position:relative;z-index:0;background:#f4efe6"></div>
       <div style="border-top:1px solid oklch(0.91 0.02 70);background:oklch(0.99 0.008 75);padding:16px 18px">
         <sc-if value="{{ showCitySummary }}" hint-placeholder-val="{{ false }}">
           <div style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.55 0.02 60);margin-bottom:12px">{{ summaryTitle }}</div>
@@ -843,7 +861,7 @@ class Component extends DCLogic {
   // re-hidratar <svg> depois de cada atualização/placeholder de streaming).
   componentDidMount() {
     this.initMap();
-    // O leaflet.js vem do <helmet> e pode terminar de carregar depois do
+    // O maplibre-gl-csp.js vem do <helmet> e pode terminar de carregar depois do
     // primeiro render; nesse caso initMap() saiu cedo sem criar o mapa.
     // Tenta de novo por alguns segundos em vez de deixar o mapa em branco.
     if (!this._map) {
@@ -874,7 +892,14 @@ class Component extends DCLogic {
     window.location.replace("https://www.google.com");
   }
 
-  // --- Mapa real (Leaflet + OpenStreetMap) ---------------------------------
+  // --- Mapa (MapLibre GL + OpenFreeMap) ---------------------------------
+  // Mapa vetorial: biblioteca servida do próprio site (vendor/maplibre, build
+  // "csp" — o worker vem de arquivo, não de blob:). Tiles, fontes e ícones do
+  // mapa vêm de tiles.openfreemap.org (grátis, sem chave, sem limite). O
+  // estilo é vendor/maplibre/style.json: o Positron do OpenFreeMap recolorido
+  // para a paleta "papel" do site.
+  // ATENÇÃO: MapLibre usa [lng, lat]; CITIES/pins/userPos guardam [lat, lng].
+  //
   // Coordenadas de CITIES[...]: center vem de fonte pública (Wikipedia/IBGE/
   // IPECE); pins vêm de geocodificação real (Nominatim/OSM) a partir dos
   // endereços dos dois PDFs oficiais fornecidos pelo dono do site. Pins sem
@@ -888,19 +913,58 @@ class Component extends DCLogic {
   }
 
   initMap() {
-    const el = document.getElementById("leaflet-map");
-    if (!el || this._map || !window.L) return;
-    this._map = window.L.map(el, { scrollWheelZoom: false, zoomSnap: 0.5 }).setView([-3.95, -40.95], 10);
-    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18,
-      attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
-    }).addTo(this._map);
-    this._markers = window.L.layerGroup().addTo(this._map);
+    const el = document.getElementById("mapa-canvas");
+    const ml = window.maplibregl;
+    if (!el || this._map || this._mapFailed || !ml) return;
+    ml.setWorkerUrl("./vendor/maplibre/maplibre-gl-csp-worker.js");
+    try {
+      this._map = new ml.Map({
+        container: el,
+        style: "./vendor/maplibre/style.json",
+        center: [REGION_CENTER[1], REGION_CENTER[0]],
+        zoom: 8,
+        maxZoom: 17,
+        minZoom: 5,
+        dragRotate: false,
+        pitchWithRotate: false,
+        touchPitch: false,
+        // Rolar a página por cima do mapa não dá zoom sem querer (Ctrl+rolagem
+        // no PC, dois dedos no celular).
+        cooperativeGestures: true,
+        // Sem `compact` fixo: texto inteiro no PC, botão ⓘ em tela estreita.
+        attributionControl: {},
+        locale: {
+          "CooperativeGesturesHandler.WindowsHelpText": "Use Ctrl + rolagem para dar zoom no mapa",
+          "CooperativeGesturesHandler.MacHelpText": "Use ⌘ + rolagem para dar zoom no mapa",
+          "CooperativeGesturesHandler.MobileHelpText": "Use dois dedos para mover o mapa",
+          "NavigationControl.ZoomIn": "Aproximar",
+          "NavigationControl.ZoomOut": "Afastar",
+          "NavigationControl.ResetBearing": "Apontar para o norte",
+          "AttributionControl.ToggleAttribution": "Créditos do mapa",
+          "Popup.Close": "Fechar"
+        }
+      });
+    } catch (e) {
+      // Sem WebGL (aparelho/navegador muito antigo): avisa e deixa a lista
+      // abaixo do mapa, que tem os mesmos dados, fazer o trabalho.
+      this._mapFailed = true;
+      el.innerHTML = "<div style=\"height:100%;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;font-size:14px;line-height:1.5;color:#5a5048\">O mapa não abre neste aparelho. Os endereços e telefones estão logo abaixo.</div>";
+      return;
+    }
+    this._map.addControl(new ml.NavigationControl({ showCompass: false }), "top-left");
+    // No modo compacto (celular) os créditos começam abertos e cobrem os pins
+    // de baixo; fecha logo de cara — continuam a um toque no ⓘ.
+    this._map.once("load", () => {
+      const a = el.querySelector(".maplibregl-ctrl-attrib.maplibregl-compact-show");
+      if (a) a.classList.remove("maplibregl-compact-show");
+    });
+    this._markers = [];
     this.syncMap();
   }
 
   syncMap() {
     if (!this._map || !this._markers) return;
+    const ml = window.maplibregl;
     const { city, filter, userPos } = this.state;
     // componentDidUpdate roda a cada tecla digitada no formulário; só refaz
     // marcadores/enquadramento quando algo que o mapa mostra mudou — senão a
@@ -908,55 +972,64 @@ class Component extends DCLogic {
     const key = city + "|" + filter + "|" + (userPos ? userPos.join(",") : "");
     if (key === this._mapKey) return;
     this._mapKey = key;
-    this._markers.clearLayers();
+    this._markers.forEach(m => m.remove());
+    this._markers = [];
+    const add = (latlng, el, html, label) => {
+      const m = new ml.Marker({ element: el, anchor: "bottom" }).setLngLat([latlng[1], latlng[0]]);
+      if (html) m.setPopup(new ml.Popup({ offset: 30, maxWidth: "250px" }).setHTML(html));
+      m.addTo(this._map);
+      // Depois do construtor: o Marker põe um aria-label genérico ("Map marker").
+      m.getElement().setAttribute("aria-label", label);
+      this._markers.push(m);
+      return m;
+    };
     // Mostra somente os pontos da categoria selecionada — não o mapa inteiro.
     const visible = (city ? ALL_PINS.filter(p => p.city === city) : ALL_PINS).filter(p => p.cat === filter);
     const points = visible.map(p => [p.lat, p.lng]);
     if (city) points.push(CITIES[city].center);
-    if (userPos) {
-      points.push(userPos);
-      // divIcon, não circleMarker: um layer vetorial aqui quebra o renderer
-      // SVG do Leaflet ("reading 'x'") e o mapa fica sem nenhum marcador.
-      const me = window.L.divIcon({
-        className: "",
-        html: "<div style=\"width:18px;height:18px;border-radius:50%;background:#2f6fdf;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,111,223,.22),0 1px 4px rgba(0,0,0,.3)\"></div>",
-        iconSize: [18, 18],
-        iconAnchor: [9, 9],
-        popupAnchor: [0, -10]
-      });
-      window.L.marker(userPos, { icon: me, zIndexOffset: 1000, title: "Você está aqui" })
-        .addTo(this._markers).bindPopup("<div style=\"font-family:Karla,system-ui,sans-serif;font-size:12.5px\">Você está aqui (aproximado)</div>");
-    }
-    // O container pode ter mudado de tamanho desde o initMap (fontes/layout
-    // terminando de carregar); sem isso o fitBounds calcula zoom errado.
-    this._map.invalidateSize();
-    if (points.length > 1) this._map.fitBounds(points, { padding: [30, 30], maxZoom: city ? 14 : 12 });
-    else this._map.setView(points[0] || REGION_CENTER, city ? 13 : 9);
     visible.forEach(p => {
       const pal = PALETTE[p.cat];
-      const border = p.approx ? "2px dashed #fff" : "2px solid #fff";
-      const opacity = p.approx ? "0.72" : "1";
-      const icon = window.L.divIcon({
-        className: "",
-        html: "<div style=\"width:30px;height:30px;border-radius:50% 50% 50% 4px;display:flex;align-items:center;justify-content:center;background:" + pal.bg + ";border:" + border + ";opacity:" + opacity + ";box-shadow:0 2px 6px rgba(0,0,0,.28)\"><i class=\"ph-bold ph-" + p.icon + "\" style=\"font-size:15px;color:" + pal.fg + "\"></i></div>",
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30]
-      });
+      const el = document.createElement("div");
+      el.className = "cd-pin" + (p.approx ? " cd-pin-approx" : "");
+      el.style.setProperty("--pin-bg", pal.bg);
+      el.style.setProperty("--pin-fg", pal.fg);
+      el.innerHTML = "<span><i class=\"ph-bold ph-" + p.icon + "\"></i></span>";
       const tel = telHref(p.phone);
       const phoneText = this.escapeHtml(p.phone);
-      const phoneLine = !p.phone ? "" : "<div style=\"font-size:11.5px;color:#333;margin-top:4px\">" +
+      const phoneLine = !p.phone ? "" : "<div class=\"cd-pop-phone\">" +
         (tel ? "<a href=\"" + this.escapeHtml(tel) + "\">" + phoneText + "</a>" : phoneText) + "</div>";
-      const approxLine = p.approx ? "<div style=\"font-size:11px;color:#a15c00;margin-top:6px\">📍 Localização aproximada (centro do município) — confirme o endereço por telefone.</div>" : "";
-      const cityLine = city ? "" : "<div style=\"font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#777;margin-bottom:2px\">" + this.escapeHtml(p.city) + "</div>";
-      const routeLine = "<div style=\"font-size:11.5px;margin-top:6px\"><a href=\"" + this.escapeHtml(routeUrl(p)) + "\" target=\"_blank\" rel=\"noopener noreferrer\">Como chegar →</a></div>";
-      const html = "<div style=\"font-family:Karla,system-ui,sans-serif;max-width:220px\">" + cityLine +
-        "<div style=\"font-family:Newsreader,Georgia,serif;font-weight:700;font-size:13.5px;margin-bottom:4px\">" + this.escapeHtml(p.name) + "</div>" +
-        "<div style=\"font-size:12px;line-height:1.5;color:#555\">" + this.escapeHtml(p.detail) + "</div>" +
-        phoneLine + approxLine + routeLine +
-        "</div>";
-      window.L.marker([p.lat, p.lng], { icon }).addTo(this._markers).bindPopup(html);
+      const approxLine = p.approx ? "<div class=\"cd-pop-approx\">Localização aproximada (centro do município) — confirme o endereço por telefone.</div>" : "";
+      const cityLine = city ? "" : "<div class=\"cd-pop-city\">" + this.escapeHtml(p.city) + "</div>";
+      const routeLine = "<a class=\"cd-pop-route\" href=\"" + this.escapeHtml(routeUrl(p)) + "\" target=\"_blank\" rel=\"noopener noreferrer\">Como chegar →</a>";
+      const html = cityLine +
+        "<div class=\"cd-pop-name\">" + this.escapeHtml(p.name) + "</div>" +
+        "<div class=\"cd-pop-detail\">" + this.escapeHtml(p.detail) + "</div>" +
+        phoneLine + approxLine + routeLine;
+      add([p.lat, p.lng], el, html, p.name + ", " + p.city);
     });
+    if (userPos) {
+      points.push(userPos);
+      const me = document.createElement("div");
+      me.className = "cd-me";
+      add(userPos, me, "<div class=\"cd-pop-name\">Você está aqui</div><div class=\"cd-pop-detail\">Posição aproximada, só neste aparelho.</div>", "Você está aqui")
+        .getElement().style.zIndex = "2";
+    }
+    // O container pode ter mudado de tamanho desde o initMap (fontes/layout
+    // terminando de carregar); sem isso o enquadramento sai errado.
+    this._map.resize();
+    const calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = calm ? 0 : 900;
+    if (points.length > 1) {
+      // Caixa como array simples [[lngMin, latMin], [lngMax, latMax]]: passar
+      // um objeto LngLatBounds quebra o fitBounds deste build ("reading
+      // 'lng'" em adjustAntiMeridian) — e o erro some calado no dc-runtime.
+      const lats = points.map(pt => pt[0]), lngs = points.map(pt => pt[1]);
+      const b = [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]];
+      this._map.fitBounds(b, { padding: { top: 50, bottom: 30, left: 40, right: 40 }, maxZoom: city ? 14.5 : 12, duration });
+    } else {
+      const c = points[0] || REGION_CENTER;
+      this._map.easeTo({ center: [c[1], c[0]], zoom: city ? 13 : 8, duration });
+    }
   }
 
   // --- Localização do usuário ----------------------------------------------
